@@ -1,0 +1,27 @@
+{
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.formatting.provider": "black",
+    "python.testing.pytestEnabled": true,
+    "files.exclude": {
+        "**/datasets/**": true,
+        "**/venv/**": true,
+        "**/__pycache__/**": true,
+        "**/physionet.org/**": true
+    },
+    "search.exclude": {
+        "**/datasets/**": true,
+        "**/venv/**": true,
+        "**/physionet.org/**": true
+    },
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+    "python.analysis.autoImportCompletions": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        },
+        {
+            "name": "Download Datasets",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/download_datasets.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Verify Datasets",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/verify_datasets.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Show Progress",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/show_progress.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
