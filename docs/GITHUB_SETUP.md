@@ -14,8 +14,8 @@
 ### 2. Conectar Repositorio Local
 
 ```bash
-# Agregar remote origin (reemplazar con tu URL)
-git remote add origin https://github.com/TU-USUARIO/Prediccion_Muerte_Subita_ECG_v1.git
+# Agregar remote origin
+git remote add origin https://github.com/felirangelp/Prediccion_Muerte_Subita_ECG_v1.git
 
 # Cambiar a rama main
 git branch -M main
@@ -148,7 +148,7 @@ Add any other context about the problem here.
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/TU-USUARIO/Prediccion_Muerte_Subita_ECG_v1.git
+git clone https://github.com/felirangelp/Prediccion_Muerte_Subita_ECG_v1.git
 cd Prediccion_Muerte_Subita_ECG_v1
 
 # Configurar ambiente
@@ -175,8 +175,8 @@ git log --oneline -5
 
 ## 🔗 Enlaces Útiles
 
-- **Repositorio**: https://github.com/TU-USUARIO/Prediccion_Muerte_Subita_ECG_v1
-- **Issues**: https://github.com/TU-USUARIO/Prediccion_Muerte_Subita_ECG_v1/issues
+- **Repositorio**: https://github.com/felirangelp/Prediccion_Muerte_Subita_ECG_v1
+- **Issues**: https://github.com/felirangelp/Prediccion_Muerte_Subita_ECG_v1/issues
 - **PhysioNet**: https://physionet.org/
 - **Documentación**: Ver `docs/` en el repositorio
 

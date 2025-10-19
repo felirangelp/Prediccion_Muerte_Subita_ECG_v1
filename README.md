@@ -12,7 +12,7 @@ Proyecto para análisis y predicción de muerte súbita cardíaca usando señale
 
 ```bash
 # Clonar repositorio desde GitHub
-git clone https://github.com/tu-usuario/Prediccion_Muerte_Subita_ECG_v1.git
+git clone https://github.com/felirangelp/Prediccion_Muerte_Subita_ECG_v1.git
 cd Prediccion_Muerte_Subita_ECG_v1
 
 # Crear ambiente virtual
