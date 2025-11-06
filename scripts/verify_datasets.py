@@ -132,22 +132,22 @@ def main():
     print("🔍 Verificando datasets de Predicción de Muerte Súbita ECG")
     print("=" * 70)
     
-    # Configuración de datasets
+    # Configuración de datasets (rutas corregidas según estructura de descarga)
     datasets_config = [
         {
             "name": "sddb",
             "description": "MIT-BIH Sudden Cardiac Death Holter Database",
-            "path": Path("datasets/sddb")
+            "path": Path("datasets/sddb/physionet.org/files/sddb/1.0.0")
         },
         {
             "name": "nsrdb",
             "description": "MIT-BIH Normal Sinus Rhythm Database", 
-            "path": Path("datasets/nsrdb")
+            "path": Path("datasets/nsrdb/physionet.org/files/nsrdb/1.0.0")
         },
         {
             "name": "cudb",
             "description": "CU Ventricular Tachyarrhythmia Database",
-            "path": Path("datasets/cudb")
+            "path": Path("datasets/cudb/physionet.org/files/cudb/1.0.0")
         }
     ]
     

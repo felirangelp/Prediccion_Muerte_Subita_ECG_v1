@@ -1,0 +1,32 @@
+{
+  "fecha": "2025-11-06T16:08:49.833775",
+  "modelos": {
+    "hierarchical": {
+      "completado": true,
+      "archivos": [
+        "hierarchical_classifier_fusion.h5",
+        "hierarchical_classifier_tcn.h5"
+      ],
+      "tama\u00f1o_mb": 0.6594009399414062
+    },
+    "hybrid": {
+      "completado": true,
+      "archivos": [
+        "hybrid_model_wavelet_dicts.pkl",
+        "hybrid_model_sparse.pkl",
+        "hybrid_model_scaler.pkl",
+        "hybrid_model_ensemble.pkl",
+        "hybrid_model_hierarchical_fusion.h5",
+        "hybrid_model_hierarchical_tcn.h5"
+      ],
+      "tama\u00f1o_mb": 6.7599382400512695
+    },
+    "sparse": {
+      "completado": true,
+      "archivos": [
+        "sparse_classifier.pkl"
+      ],
+      "tama\u00f1o_mb": 4.378101348876953
+    }
+  }
+}

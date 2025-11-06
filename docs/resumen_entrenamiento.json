@@ -1,0 +1,29 @@
+{
+  "fecha_entrenamiento": "2025-11-06",
+  "modelos_completados": 3,
+  "total_modelos": 3,
+  "progreso": "100%",
+  "resultados": {
+    "hierarchical": {
+      "precision_test": 0.8762,
+      "tiempo_entrenamiento_minutos": 10,
+      "usa_gpu": true
+    },
+    "hybrid": {
+      "tiempo_entrenamiento_minutos": 15,
+      "usa_gpu": true
+    },
+    "sparse": {
+      "tiempo_entrenamiento_minutos": 90,
+      "usa_gpu": false
+    }
+  },
+  "archivos_generados": 13,
+  "tama\u00f1o_total_mb": 11.8,
+  "problemas_resueltos": [
+    "Valores NaN/Inf en modelos H\u00edbrido y Sparse",
+    "Broadcasting error en k-SVD",
+    "Lentitud del modelo Sparse",
+    "Optimizaci\u00f3n para Apple Silicon M1"
+  ]
+}

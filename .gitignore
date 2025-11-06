@@ -5,6 +5,7 @@ ENV/
 
 # Datasets (archivos grandes - NO subir a GitHub)
 datasets/
+results/
 *.dat
 *.hea
 *.atr
@@ -130,6 +131,13 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
+
+# Configuración y checkpoints
+config/
+*.checkpoint
+descarga_checkpoint.json
+archivos_omitidos.json
 
 # Archivos temporales
 *.tmp
