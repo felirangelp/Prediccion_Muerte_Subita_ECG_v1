@@ -5,8 +5,20 @@ ENV/
 
 # Datasets (archivos grandes - NO subir a GitHub)
 datasets/
-results/
 *.dat
+
+# Resultados generados (excluir por defecto, pero permitir archivos importantes)
+results/
+!results/*.md
+!results/*.html
+!results/*.pkl
+!results/*.js
+
+# Modelos entrenados (incluir para backup completo)
+models/
+!models/*.pkl
+!models/*.h5
+!models/*.json
 *.hea
 *.atr
 *.ari

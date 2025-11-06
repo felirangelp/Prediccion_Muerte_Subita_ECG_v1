@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard - Predicción de Muerte Súbita Cardíaca</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .plot-container {
+            margin: 20px 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .metric-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🔬 Dashboard de Predicción de Muerte Súbita Cardíaca</h1>
+        <p>Análisis comparativo de métodos: Representaciones Dispersas, Fusión Jerárquica y Modelo Híbrido</p>
+    </div>
+
+    <div class="section">
+        <h2>📈 Resumen Ejecutivo</h2>
+        <div class="metrics-grid">
+            <div class="metric-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <h3>Método 1: Representaciones Dispersas</h3>
+                <div class="value">94.20%</div>
+                <p>Precisión en Test</p>
+                <p style="font-size: 0.8em; margin-top: 10px;">⭐ Mejor Rendimiento | AUC: 97.91%</p>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h3>Método 2: Fusión Jerárquica</h3>
+                <div class="value">87.86%</div>
+                <p>Precisión en Test</p>
+                <p style="font-size: 0.8em; margin-top: 10px;">🚀 Usa GPU Metal | AUC: 86.67%</p>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h3>Modelo Híbrido</h3>
+                <div class="value">74.76%</div>
+                <p>Precisión en Test</p>
+                <p style="font-size: 0.8em; margin-top: 10px;">🔗 Combinación Dual | AUC: 85.88%</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🎓 Resultados de Entrenamiento</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="training-overview">Resumen</button>
+            <button class="tab" data-tab="training-metrics">Métricas</button>
+            <button class="tab" data-tab="training-performance">Rendimiento</button>
+            <button class="tab" data-tab="training-details">Detalles Técnicos</button>
+        </div>
+
+        <div id="training-overview" class="tab-content active">
+            <h3>📊 Resumen del Proceso de Entrenamiento</h3>
+            <p>Esta sección presenta los resultados completos del entrenamiento de los tres modelos implementados para
+                la predicción de muerte súbita cardíaca.</p>
+
+            <div class="metrics-grid" style="margin-top: 30px;">
+                <div class="metric-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h3>Modelos Entrenados</h3>
+                    <div class="value">3/3</div>
+                    <p>100% Completitud</p>
+                </div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h3>Tiempo Total</h3>
+                    <div class="value">~2h</div>
+                    <p>Entrenamiento Completo</p>
+                </div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h3>Mejor Precisión</h3>
+                    <div class="value">94.20%</div>
+                    <p>Modelo Sparse</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h4>✅ Estado de Entrenamiento</h4>
+                <ul style="line-height: 2;">
+                    <li><strong>✅ Modelo Sparse (Representaciones Dispersas):</strong> Completado - 94.20% precisión,
+                        AUC: 97.91%</li>
+                    <li><strong>✅ Modelo Hierarchical (Fusión Jerárquica):</strong> Completado - 87.86% precisión, AUC:
+                        86.67%</li>
+                    <li><strong>✅ Modelo Híbrido:</strong> Completado - 74.76% precisión, AUC: 85.88%</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="training-metrics" class="tab-content">
+            <h3>📈 Comparación de Métricas de Precisión</h3>
+            <div class="plot-container" id="accuracy-comparison-plot"></div>
+
+            <h3 style="margin-top: 40px;">📊 Tabla Comparativa de Resultados</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <th style="padding: 12px; text-align: left;">Modelo</th>
+                        <th style="padding: 12px; text-align: center;">Accuracy</th>
+                        <th style="padding: 12px; text-align: center;">Precision</th>
+                        <th style="padding: 12px; text-align: center;">Recall</th>
+                        <th style="padding: 12px; text-align: center;">F1-Score</th>
+                        <th style="padding: 12px; text-align: center;">AUC-ROC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                        <td style="padding: 12px;"><strong>Representaciones Dispersas</strong></td>
+                        <td style="padding: 12px; text-align: center; color: #11998e; font-weight: bold;">94.20%</td>
+                        <td style="padding: 12px; text-align: center;">94.19%</td>
+                        <td style="padding: 12px; text-align: center;">94.20%</td>
+                        <td style="padding: 12px; text-align: center;">94.20%</td>
+                        <td style="padding: 12px; text-align: center; color: #11998e; font-weight: bold;">97.91%</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                        <td style="padding: 12px;"><strong>Fusión Jerárquica</strong></td>
+                        <td style="padding: 12px; text-align: center; color: #667eea; font-weight: bold;">87.86%</td>
+                        <td style="padding: 12px; text-align: center;">87.80%</td>
+                        <td style="padding: 12px; text-align: center;">87.86%</td>
+                        <td style="padding: 12px; text-align: center;">87.80%</td>
+                        <td style="padding: 12px; text-align: center; color: #667eea; font-weight: bold;">86.67%</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;"><strong>Modelo Híbrido</strong></td>
+                        <td style="padding: 12px; text-align: center; color: #f5576c; font-weight: bold;">74.76%</td>
+                        <td style="padding: 12px; text-align: center;">77.64%</td>
+                        <td style="padding: 12px; text-align: center;">74.76%</td>
+                        <td style="padding: 12px; text-align: center;">75.14%</td>
+                        <td style="padding: 12px; text-align: center; color: #f5576c; font-weight: bold;">85.88%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="training-performance" class="tab-content">
+            <h3>⏱️ Análisis de Tiempo de Entrenamiento</h3>
+            <div class="plot-container" id="training-time-plot"></div>
+
+            <h3 style="margin-top: 40px;">💻 Uso de Recursos</h3>
+            <div class="plot-container" id="resource-usage-plot"></div>
+        </div>
+
+        <div id="training-details" class="tab-content">
+            <h3>🔧 Configuración y Parámetros de Entrenamiento</h3>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #11998e;">
+                    <h4>Modelo Sparse</h4>
+                    <ul style="line-height: 2;">
+                        <li><strong>Átomos:</strong> 30</li>
+                        <li><strong>Coeficientes no cero:</strong> 3</li>
+                        <li><strong>Iteraciones k-SVD:</strong> 20</li>
+                        <li><strong>Kernel SVM:</strong> RBF</li>
+                        <li><strong>Ventana:</strong> 30 segundos</li>
+                    </ul>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <h4>Modelo Hierarchical</h4>
+                    <ul style="line-height: 2;">
+                        <li><strong>Filtros TCN:</strong> 32</li>
+                        <li><strong>Dimensión fusión:</strong> 64</li>
+                        <li><strong>Épocas:</strong> 20</li>
+                        <li><strong>Batch size:</strong> 8</li>
+                        <li><strong>Optimizador:</strong> Adam Legacy</li>
+                    </ul>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #f5576c;">
+                    <h4>Modelo Híbrido</h4>
+                    <ul style="line-height: 2;">
+                        <li><strong>Átomos wavelet:</strong> 50</li>
+                        <li><strong>Coeficientes no cero:</strong> 5</li>
+                        <li><strong>Wavelet:</strong> db4</li>
+                        <li><strong>Niveles:</strong> 5</li>
+                        <li><strong>Épocas:</strong> 10</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; background: #e8f4f8; padding: 20px; border-radius: 8px;">
+                <h4>📋 Información del Entorno</h4>
+                <ul style="line-height: 2;">
+                    <li><strong>Hardware:</strong> Apple M1 Max (32 GB RAM)</li>
+                    <li><strong>GPU:</strong> Apple Metal (utilizada por Hierarchical e Híbrido)</li>
+                    <li><strong>Python:</strong> 3.10</li>
+                    <li><strong>TensorFlow:</strong> 2.13+ (con soporte Metal)</li>
+                    <li><strong>Total de muestras:</strong> 23,750 (19,000 train / 4,750 test)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Análisis Exploratorio de Datos</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="data-overview">Resumen</button>
+            <button class="tab" data-tab="data-distribution">Distribución</button>
+            <button class="tab" data-tab="data-signals">Señales</button>
+        </div>
+
+        <div id="data-overview" class="tab-content active">
+            <h3>Resumen de Datos</h3>
+            <p>Esta sección muestra información general sobre los datasets utilizados.</p>
+            <ul>
+                <li><strong>SDDB:</strong> 23 pacientes con muerte súbita cardíaca</li>
+                <li><strong>NSRDB:</strong> 18 pacientes sanos</li>
+                <li><strong>Frecuencia de muestreo:</strong> 128-250 Hz</li>
+                <li><strong>Duración:</strong> 24 horas por paciente</li>
+            </ul>
+        </div>
+
+        <div id="data-distribution" class="tab-content">
+            <h3>Distribución de Clases</h3>
+            <div class="plot-container" id="class-distribution-plot"></div>
+        </div>
+
+        <div id="data-signals" class="tab-content">
+            <h3>Ejemplos de Señales ECG</h3>
+            <div class="plot-container" id="signal-examples-plot"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Método 1: Representaciones Dispersas</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="sparse-method">Método</button>
+            <button class="tab" data-tab="sparse-performance">Rendimiento</button>
+            <button class="tab" data-tab="sparse-dictionaries">Diccionarios</button>
+        </div>
+
+        <div id="sparse-method" class="tab-content active">
+            <h3>Descripción del Método</h3>
+            <p>Este método utiliza representaciones dispersas (sparse representations) para extraer características
+                robustas de señales ECG.</p>
+            <ul>
+                <li><strong>Algoritmo OMP:</strong> Orthogonal Matching Pursuit para encontrar representaciones
+                    dispersas</li>
+                <li><strong>k-SVD:</strong> Aprendizaje de diccionarios adaptativos</li>
+                <li><strong>Clasificación:</strong> SVM con kernel RBF</li>
+            </ul>
+        </div>
+
+        <div id="sparse-performance" class="tab-content">
+            <h3>Métricas de Rendimiento</h3>
+            <div class="plot-container" id="sparse-metrics-plot"></div>
+        </div>
+
+        <div id="sparse-dictionaries" class="tab-content">
+            <h3>Diccionarios Aprendidos</h3>
+            <p>Visualización de los átomos del diccionario aprendidos para cada clase.</p>
+            <div class="plot-container" id="sparse-dictionaries-plot"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔗 Método 2: Fusión Jerárquica de Características</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="hierarchical-method">Método</button>
+            <button class="tab" data-tab="hierarchical-performance">Rendimiento</button>
+            <button class="tab" data-tab="hierarchical-features">Características</button>
+        </div>
+
+        <div id="hierarchical-method" class="tab-content active">
+            <h3>Descripción del Método</h3>
+            <p>Este método combina características lineales, no lineales y de deep learning mediante fusión jerárquica.
+            </p>
+            <ul>
+                <li><strong>Características Lineales:</strong> Intervalos RR, complejos QRS, ondas T</li>
+                <li><strong>Características No Lineales:</strong> DFA-2, entropías</li>
+                <li><strong>Deep Learning:</strong> TCN-Seq2vec para representaciones multiescala</li>
+                <li><strong>Fusión:</strong> Combinación jerárquica de características heterogéneas</li>
+            </ul>
+        </div>
+
+        <div id="hierarchical-performance" class="tab-content">
+            <h3>Métricas de Rendimiento</h3>
+            <div class="plot-container" id="hierarchical-metrics-plot"></div>
+        </div>
+
+        <div id="hierarchical-features" class="tab-content">
+            <h3>Análisis de Características</h3>
+            <div class="plot-container" id="hierarchical-features-plot"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Modelo Híbrido</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="hybrid-method">Método</button>
+            <button class="tab" data-tab="hybrid-performance">Rendimiento</button>
+            <button class="tab" data-tab="hybrid-comparison">Comparación</button>
+        </div>
+
+        <div id="hybrid-method" class="tab-content active">
+            <h3>Descripción del Modelo Híbrido</h3>
+            <p>El modelo híbrido combina las fortalezas de ambos métodos anteriores:</p>
+            <ul>
+                <li><strong>Diccionarios Wavelet:</strong> Usa transformada wavelet para generar átomos del diccionario
+                </li>
+                <li><strong>Representaciones Dispersas:</strong> Aplica OMP sobre escalogramas wavelet</li>
+                <li><strong>Fusión Dual:</strong> Combina características de ambos métodos</li>
+                <li><strong>Ensemble:</strong> Clasificador de votación que combina predicciones</li>
+            </ul>
+        </div>
+
+        <div id="hybrid-performance" class="tab-content">
+            <h3>Métricas de Rendimiento</h3>
+            <div class="plot-container" id="hybrid-metrics-plot"></div>
+        </div>
+
+        <div id="hybrid-comparison" class="tab-content">
+            <h3>Comparación con Métodos Individuales</h3>
+            <div class="plot-container" id="hybrid-comparison-plot"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Análisis Comparativo</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="comparative-metrics">Métricas</button>
+            <button class="tab" data-tab="comparative-roc">Curvas ROC</button>
+            <button class="tab" data-tab="comparative-pca">Análisis PCA</button>
+        </div>
+
+        <div id="comparative-metrics" class="tab-content active">
+            <h3>Comparación de Métricas</h3>
+            <div class="plot-container" id="comparative-metrics-plot"></div>
+        </div>
+
+        <div id="comparative-roc" class="tab-content">
+            <h3>Curvas ROC Comparativas</h3>
+            <div class="plot-container" id="comparative-roc-plot"></div>
+
+            <h3 style="margin-top: 40px;">📊 Matrices de Confusión</h3>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div>
+                    <h4>Representaciones Dispersas</h4>
+                    <div class="plot-container" id="confusion-sparse-plot"></div>
+                </div>
+                <div>
+                    <h4>Fusión Jerárquica</h4>
+                    <div class="plot-container" id="confusion-hierarchical-plot"></div>
+                </div>
+                <div>
+                    <h4>Modelo Híbrido</h4>
+                    <div class="plot-container" id="confusion-hybrid-plot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="comparative-pca" class="tab-content">
+            <h3>Reducción de Dimensionalidad (PCA)</h3>
+            <div class="plot-container" id="comparative-pca-plot"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>⚡ Predicción en Tiempo Real</h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="realtime-upload">Cargar Señal</button>
+            <button class="tab" data-tab="realtime-results">Resultados</button>
+        </div>
+
+        <div id="realtime-upload" class="tab-content active">
+            <h3>Cargar Nueva Señal ECG</h3>
+            <p>Para usar esta funcionalidad, carga una señal ECG y el sistema realizará la predicción usando los tres
+                modelos.</p>
+            <p><em>Nota: Esta funcionalidad requiere implementación adicional del frontend.</em></p>
+        </div>
+
+        <div id="realtime-results" class="tab-content">
+            <h3>Resultados de Predicción</h3>
+            <p>Los resultados se mostrarán aquí después de cargar una señal.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        // Datos de evaluación embebidos
+        const evaluationData = {
+            "roc_curves": {
+                "sparse": {
+                    "fpr": [0.0, 0.0003698224852071006, 0.0011094674556213018, 0.0018491124260355029, 0.0025887573964497044, 0.0033284023668639054, 0.0040680473372781065, 0.004807692307692308, 0.005547337278106509, 0.00628698224852071, 0.0070266272189349116, 0.007766272189349112, 0.008505917159763314, 0.009245562130177515, 0.009985207100591717, 0.011094674556213017, 0.011834319526627219, 0.01257396449704142, 0.013313609467455622, 0.014053254437869823, 0.015162721893491124, 0.015902366863905327, 0.01664201183431953, 0.017381656804733726, 0.018121301775147928, 0.01886094674556213, 0.01960059171597633, 0.020340236686390532, 0.021079881656804734, 0.021819526627218935, 0.022928994082840236, 0.02403846153846154, 0.02477810650887574, 0.02551775147928994, 0.02625739644970414, 0.026997041420118342, 0.027736686390532544, 0.028846153846153848, 0.029585798816568046, 0.030325443786982247, 0.03106508875739645, 0.03254437869822485, 0.03328402366863906, 0.034023668639053255, 0.035133136094674555, 0.036242603550295856, 0.03735207100591716, 0.03809171597633136, 0.03883136094674556, 0.03994082840236687, 0.040680473372781065, 0.041789940828402365, 0.04326923076923077, 0.04437869822485207, 0.045118343195266274, 0.047337278106508875, 0.048446745562130175, 0.04955621301775148, 0.05029585798816568, 0.05103550295857988, 0.051775147928994084, 0.05251479289940828, 0.05325443786982249, 0.05436390532544379, 0.055103550295857985, 0.05584319526627219, 0.05658284023668639, 0.05732248520710059, 0.05806213017751479, 0.05917159763313609, 0.059911242603550297, 0.060650887573964495, 0.0613905325443787, 0.0625, 0.0632396449704142, 0.0639792899408284, 0.06656804733727811, 0.06804733727810651, 0.07026627218934911, 0.07248520710059171, 0.07359467455621302, 0.07470414201183433, 0.07618343195266272, 0.07692307692307693, 0.07803254437869822, 0.07877218934911243, 0.07988165680473373, 0.08468934911242604, 0.08579881656804733, 0.08653846153846154, 0.08801775147928995, 0.09208579881656805, 0.10207100591715976, 0.10355029585798817, 0.10613905325443787, 0.10761834319526627, 0.11020710059171597, 0.11168639053254438, 0.11390532544378698, 0.11501479289940829, 0.11871301775147929, 0.12093195266272189, 0.1231508875739645, 0.1242603550295858, 0.1290680473372781, 0.13535502958579881, 0.1390532544378698, 0.14460059171597633, 0.15051775147928995, 0.15273668639053253, 0.15421597633136094, 0.16198224852071005, 0.17381656804733728, 0.17899408284023668, 0.1863905325443787, 0.1889792899408284, 0.1937869822485207, 0.20673076923076922, 0.20857988165680474, 0.21190828402366865, 0.21634615384615385, 0.21856508875739644, 0.22522189349112426, 0.22818047337278108, 0.22965976331360946, 0.24260355029585798, 0.2448224852071006, 0.2533284023668639, 0.2640532544378698, 0.2655325443786982, 0.27514792899408286, 0.2843934911242604, 0.28735207100591714, 0.29511834319526625, 0.30029585798816566, 0.3073224852071006, 0.3132396449704142, 0.34134615384615385, 0.3701923076923077, 0.3724112426035503, 0.4093934911242604, 0.4415680473372781, 0.45821005917159763, 0.4718934911242604, 0.5066568047337278, 0.5181213017751479, 0.5229289940828402, 0.5613905325443787, 0.5998520710059172, 0.6442307692307693, 0.6549556213017751, 0.7215236686390533, 0.768491124260355, 0.7825443786982249, 0.7925295857988166, 0.8505917159763313, 0.9101331360946746, 0.9818786982248521, 0.9885355029585798, 1.0],
+                    "tpr": [0.0, 0.18095453517303778, 0.2603483374802081, 0.3585161728115811, 0.37683781949785117, 0.4288622483600995, 0.4596245193395159, 0.47591042750508933, 0.5390183216466863, 0.5727211038226645, 0.6209002488124858, 0.6541506446505315, 0.687174847319611, 0.6916987106989368, 0.6928296765437684, 0.6964487672472292, 0.7129608685817689, 0.7364849581542637, 0.7380683103370278, 0.7609138204026238, 0.7833069441302872, 0.7909975118751413, 0.805926261026917, 0.8106763175752092, 0.82040262384076, 0.8233431350373219, 0.8271884189097489, 0.831033702782176, 0.8335218276408053, 0.8389504636959964, 0.8405338158787604, 0.8479981904546483, 0.8532006333408731, 0.8581768830581317, 0.8633793259443565, 0.8660936439719521, 0.8688079619995476, 0.8708437005202443, 0.8740104048857724, 0.8760461434064691, 0.8783080750961321, 0.8817009726306265, 0.8864510291789188, 0.8875819950237502, 0.8914272788961773, 0.8945939832617055, 0.8961773354444695, 0.900248812485863, 0.9016059714996607, 0.9022845510065596, 0.9045464826962226, 0.9061298348789867, 0.9079393802307171, 0.9090703460755485, 0.9099751187514137, 0.9154037548066049, 0.9183442660031667, 0.9203800045238634, 0.9215109703686949, 0.923094322551459, 0.9244514815652567, 0.9255824474100882, 0.926939606423886, 0.9296539244514815, 0.9301063107894142, 0.9305586971273467, 0.9323682424790771, 0.9334992083239086, 0.9355349468446053, 0.9364397195204704, 0.9384754580411672, 0.9396064238859987, 0.9400588102239312, 0.9429993214204931, 0.9441302872653246, 0.9450350599411897, 0.9457136394480886, 0.9466184121239538, 0.947523184799819, 0.9486541506446505, 0.949785116489482, 0.9502375028274146, 0.9506898891653472, 0.9513684686722461, 0.9545351730377742, 0.9554399457136394, 0.9561185252205383, 0.9583804569102014, 0.9613209681067632, 0.9624519339515947, 0.9629043202895272, 0.9633567066274599, 0.9642614793033251, 0.9647138656412576, 0.9651662519791903, 0.966523410992988, 0.9672019904998869, 0.9676543768378195, 0.9681067631757521, 0.9687853426826509, 0.9694639221895499, 0.9699163085274825, 0.971047274372314, 0.9717258538792128, 0.9721782402171455, 0.972630626555078, 0.9733092060619769, 0.9737615923999096, 0.9742139787378421, 0.974892558244741, 0.9757973309206062, 0.9767021035964714, 0.977154489934404, 0.9776068762723366, 0.9780592626102692, 0.9785116489482018, 0.9791902284551006, 0.9798688079619996, 0.9807735806378647, 0.9812259669757973, 0.9816783533137299, 0.9821307396516625, 0.9825831259895951, 0.983261705496494, 0.9837140918344266, 0.9841664781723592, 0.9846188645102918, 0.9850712508482243, 0.985523637186157, 0.9859760235240895, 0.9866546030309885, 0.987106989368921, 0.9875593757068537, 0.9880117620447862, 0.9884641483827188, 0.9891427278896178, 0.9895951142275503, 0.990047500565483, 0.9904998869034155, 0.9909522732413482, 0.9914046595792807, 0.9918570459172134, 0.9923094322551459, 0.9927618185930784, 0.9932142049310111, 0.9936665912689436, 0.9941189776068763, 0.9945713639448088, 0.9950237502827415, 0.995476136620674, 0.9959285229586067, 0.9963809092965392, 0.9968332956344719, 0.9972856819724044, 0.9977380683103371, 0.9981904546482696, 0.9986428409862023, 0.9990952273241348, 0.9995476136620675, 1.0],
+                    "auc": 0.9790568882512056
+                },
+                "hierarchical": {
+                    "fpr": [0.0, 0.18269230769230768, 1.0],
+                    "tpr": [0.0, 0.9160823343135037, 1.0],
+                    "auc": 0.8666950133105981
+                },
+                "hybrid": {
+                    "fpr": [0.0, 0.0022189349112426036, 0.004437869822485207, 0.006656804733727811, 0.008875739644970414, 0.011094674556213017, 0.013313609467455622, 0.015532544378698224, 0.01775147928994083, 0.020340236686390532, 0.022928994082840236, 0.02514792899408284, 0.027366863905325445, 0.029585798816568046, 0.031804733727810654, 0.034023668639053255, 0.036242603550295856, 0.03883136094674556, 0.04105029585798817, 0.04363905325443787, 0.04585798816568047, 0.048446745562130175, 0.05066568047337278, 0.05325443786982249, 0.05584319526627219, 0.058801775147928996, 0.0617603550295858, 0.0639792899408284, 0.0673076923076923, 0.07100591715976332, 0.07359467455621302, 0.07618343195266272, 0.08025147928994082, 0.08284023668639054, 0.08505917159763314, 0.08764792899408284, 0.09171597633136094, 0.09393491124260354, 0.09615384615384616, 0.09948224852071005, 0.10170118343195267, 0.10428994082840237, 0.10687869822485208, 0.11057692307692307, 0.11353550295857988, 0.11575443786982248, 0.11945266272189349, 0.12389053254437869, 0.128698224852071, 0.13165680473372782, 0.13683431952662722, 0.14090236686390534, 0.14460059171597633, 0.14977810650887574, 0.15384615384615385, 0.15791420118343194, 0.16309171597633135, 0.16826923076923078, 0.17196745562130178, 0.17492603550295857, 0.17899408284023668, 0.1830621301775148, 0.1871301775147929, 0.191198224852071, 0.19489644970414202, 0.19785502958579881, 0.20229289940828402, 0.20488165680473372, 0.20931952662721892, 0.21338757396449703, 0.21745562130177515, 0.22337278106508876, 0.22707100591715976, 0.23150887573964496, 0.23520710059171598, 0.2403846153846154, 0.2440828402366864, 0.2474112426035503, 0.2503698224852071, 0.2566568047337278, 0.261094674556213, 0.2666420118343195, 0.26997041420118345, 0.27403846153846156, 0.27884615384615385, 0.28291420118343197, 0.28624260355029585, 0.28883136094674555, 0.2921597633136095, 0.29622781065088755, 0.3010355029585799, 0.3036242603550296, 0.3065828402366864, 0.308801775147929, 0.3125, 0.3147189349112426, 0.3173076923076923, 0.3202662721893491, 0.3243343195266272, 0.3291420118343195, 0.33247041420118345, 0.33579881656804733, 0.33838757396449703, 0.34282544378698226, 0.34578402366863903, 0.3494822485207101, 0.3520710059171598, 0.3568786982248521, 0.3613165680473373, 0.36427514792899407, 0.3683431952662722, 0.3716715976331361, 0.3746301775147929, 0.3779585798816568, 0.3812869822485207, 0.3849852071005917, 0.3875739644970414, 0.3916420118343195, 0.3942307692307692, 0.39718934911242604, 0.39977810650887574, 0.40421597633136097, 0.4068047337278107, 0.40976331360946744, 0.41383136094674555, 0.41642011834319526, 0.4234467455621302, 0.43047337278106507, 0.4356508875739645, 0.4386094674556213, 0.4415680473372781, 0.44452662721893493, 0.4467455621301775, 0.5565828402366864, 0.5632396449704142, 0.5691568047337278, 0.5880177514792899, 0.6135355029585798, 0.6235207100591716, 0.6301775147928994, 0.6368343195266272, 0.6401627218934911, 0.6479289940828402, 0.6601331360946746, 0.669008875739645, 0.6767751479289941, 0.6863905325443787, 0.6919378698224852, 0.705991124260355, 0.7159763313609467, 0.7296597633136095, 0.7522189349112426, 0.797707100591716, 0.8125, 0.8905325443786982],
+                    "tpr": [0.0, 0.0325718163311468, 0.08550101786926034, 0.12485862926939606, 0.14385885546256502, 0.1789187966523411, 0.1949785116489482, 0.21352635150418459, 0.258764985297444, 0.28636055191133225, 0.32662293598733316, 0.3580637864736485, 0.3895046369599638, 0.41642162406695316, 0.42592173716353765, 0.4410766794842796, 0.4492196335670663, 0.4725175299705949, 0.48473196109477495, 0.4978511648948202, 0.5145894593983261, 0.5231847998190454, 0.5308753675638995, 0.5408278669984167, 0.5453517303777425, 0.5516851391087989, 0.5582447410088215, 0.5629947975571138, 0.5681972404433386, 0.5736258764985297, 0.5808640579054513, 0.5878760461434065, 0.5910427505089346, 0.5953404207192943, 0.5985071250848224, 0.6048405338158788, 0.6107215562090025, 0.6166025786021262, 0.6231621805021489, 0.6304003619090703, 0.63469803211943, 0.6378647364849581, 0.6426147930332504, 0.645329111060846, 0.6487220085953405, 0.6521149061298349, 0.6584483148608912, 0.6616150192264194, 0.6656864962678127, 0.6693055869712735, 0.6733770640126668, 0.6767699615471613, 0.6794842795747569, 0.6842343361230491, 0.6867224609816783, 0.6903415516851391, 0.6939606423885999, 0.6969011535851617, 0.6984845057679258, 0.7002940511196561, 0.7027821759782854, 0.7066274598507125, 0.7095679710472744, 0.7129608685817689, 0.7159013797783307, 0.7179371182990274, 0.7201990499886903, 0.7217824021714544, 0.7247229133680163, 0.7267586518887129, 0.7292467767473423, 0.7321872879439041, 0.7353539923094322, 0.7382945035059941, 0.7414612078715223, 0.7444017190680842, 0.7477946166025786, 0.7498303551232752, 0.753449445826736, 0.7550327980095001, 0.7584256955439945, 0.7602352408957249, 0.762497172585388, 0.7661162632888486, 0.7697353539923094, 0.7731282515268039, 0.7762949558923321, 0.7805926261026916, 0.782402171454422, 0.785342682650984, 0.7876046143406469, 0.7889617733544447, 0.7946166025786021, 0.7982356932820629, 0.8007238181406922, 0.8027595566613889, 0.8057000678579507, 0.8072834200407147, 0.8115810902510744, 0.8138430219407374, 0.8174621126441981, 0.8217597828545578, 0.824926487220086, 0.8301289301063108, 0.8321646686270074, 0.8353313729925356, 0.8416647817235919, 0.8446052929201538, 0.847771997285682, 0.8513910879891428, 0.8541054060167383, 0.858403076227098, 0.8642840986202217, 0.8669984166478172, 0.8724270527030084, 0.876724722913368, 0.8810223931237277, 0.8882605745306492, 0.8934630174168741, 0.8993440398099978, 0.9049988690341552, 0.9099751187514137, 0.9133680162859081, 0.9154037548066049, 0.9169871069893689, 0.918570459172133, 0.9212847771997286, 0.9237729020583578, 0.9262610269169871, 0.9307848902963131, 0.9334992083239086, 0.9393802307170324, 0.942094548744628, 0.9590590364171002, 0.9606423885998643, 0.9624519339515947, 0.9642614793033251, 0.9672019904998869, 0.9694639221895499, 0.9714996607102465, 0.9735353992309432, 0.974892558244741, 0.9767021035964714, 0.9782854557792354, 0.9798688079619996, 0.9819045464826962, 0.9841664781723592, 0.9862022166930559, 0.9877855688758199, 0.989368921058584, 0.9909522732413482, 0.9923094322551459, 0.9936665912689436, 0.995476136620674, 0.9997738068310337],
+                    "auc": 0.8588481430745407
+                }
+            },
+            "confusion_matrices": {
+                "sparse": [[2480, 224], [189, 4232]],
+                "hierarchical": [[2210, 494], [371, 4050]],
+                "hybrid": [[2231, 473], [1325, 3096]]
+            },
+            "metrics": {
+                "sparse": {
+                    "accuracy": 0.9420350877192982,
+                    "precision": 0.9419341711077927,
+                    "recall": 0.9420350877192982,
+                    "f1": 0.9419605657593039,
+                    "auc": 0.9790568882512056
+                },
+                "hierarchical": {
+                    "accuracy": 0.8785964912280702,
+                    "precision": 0.8779917982544698,
+                    "recall": 0.8785964912280702,
+                    "f1": 0.8780165835115744,
+                    "auc": 0.8666950133105981
+                },
+                "hybrid": {
+                    "accuracy": 0.7476491228070176,
+                    "precision": 0.7763575830763704,
+                    "recall": 0.7476491228070176,
+                    "f1": 0.7513673798430427,
+                    "auc": 0.8588481430745407
+                }
+            }
+        };
+
+        // Funcionalidad de tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                const tabName = this.getAttribute('data-tab');
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+
+                // Generar gráficos cuando se activa la pestaña
+                if (tabName === 'training-metrics') {
+                    generateAccuracyComparison();
+                } else if (tabName === 'training-performance') {
+                    generateTrainingTimePlot();
+                    generateResourceUsagePlot();
+                } else if (tabName === 'comparative-roc') {
+                    generateROCComparison();
+                    generateConfusionMatrices();
+                } else if (tabName === 'comparative-metrics') {
+                    generateMetricsComparison();
+                }
+            });
+        });
+
+        // Gráfico de comparación de precisión
+        function generateAccuracyComparison() {
+            if (document.getElementById('accuracy-comparison-plot').hasChildNodes()) {
+                return;
+            }
+
+            const models = ['Representaciones\nDispersas', 'Fusión\nJerárquica', 'Modelo\nHíbrido'];
+            const accuracy = [
+                evaluationData.metrics.sparse.accuracy * 100,
+                evaluationData.metrics.hierarchical.accuracy * 100,
+                evaluationData.metrics.hybrid.accuracy * 100
+            ];
+            const colors = ['#11998e', '#667eea', '#f5576c'];
+
+            const trace = {
+                x: models,
+                y: accuracy,
+                type: 'bar',
+                marker: {
+                    color: colors,
+                    line: { color: 'rgb(8,48,107)', width: 1.5 }
+                },
+                text: accuracy.map(a => a.toFixed(2) + '%'),
+                textposition: 'outside',
+                textfont: { size: 14, color: 'black', family: 'Arial Black' }
+            };
+
+            const layout = {
+                title: { text: 'Comparación de Precisión en Test Set', font: { size: 20, color: '#667eea' } },
+                xaxis: { title: 'Modelo', titlefont: { size: 14 } },
+                yaxis: { title: 'Precisión (%)', titlefont: { size: 14 }, range: [70, 100] },
+                height: 500,
+                margin: { l: 60, r: 40, t: 80, b: 60 },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white'
+            };
+
+            Plotly.newPlot('accuracy-comparison-plot', [trace], layout, { responsive: true });
+        }
+
+        // Gráfico de tiempo de entrenamiento
+        function generateTrainingTimePlot() {
+            if (document.getElementById('training-time-plot').hasChildNodes()) {
+                return;
+            }
+
+            const models = ['Representaciones\nDispersas', 'Fusión\nJerárquica', 'Modelo\nHíbrido'];
+            const times = [90, 10, 15];
+            const colors = ['#11998e', '#667eea', '#f5576c'];
+
+            const trace = {
+                x: models,
+                y: times,
+                type: 'bar',
+                marker: {
+                    color: colors,
+                    line: { color: 'rgb(8,48,107)', width: 1.5 }
+                },
+                text: times.map(t => t + ' min'),
+                textposition: 'outside',
+                textfont: { size: 14, color: 'black', family: 'Arial Black' }
+            };
+
+            const layout = {
+                title: { text: 'Tiempo de Entrenamiento por Modelo', font: { size: 20, color: '#667eea' } },
+                xaxis: { title: 'Modelo', titlefont: { size: 14 } },
+                yaxis: { title: 'Tiempo (minutos)', titlefont: { size: 14 } },
+                height: 400,
+                margin: { l: 60, r: 40, t: 80, b: 60 },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white'
+            };
+
+            Plotly.newPlot('training-time-plot', [trace], layout, { responsive: true });
+        }
+
+        // Gráfico de uso de recursos
+        function generateResourceUsagePlot() {
+            if (document.getElementById('resource-usage-plot').hasChildNodes()) {
+                return;
+            }
+
+            const models = ['Sparse', 'Hierarchical', 'Híbrido'];
+            const gpuUsage = [0, 100, 100];
+            const cpuUsage = [100, 20, 20];
+
+            const trace1 = {
+                x: models,
+                y: gpuUsage,
+                name: 'GPU',
+                type: 'bar',
+                marker: { color: '#667eea' }
+            };
+
+            const trace2 = {
+                x: models,
+                y: cpuUsage,
+                name: 'CPU',
+                type: 'bar',
+                marker: { color: '#11998e' }
+            };
+
+            const layout = {
+                title: { text: 'Uso de Recursos por Modelo', font: { size: 20, color: '#667eea' } },
+                xaxis: { title: 'Modelo', titlefont: { size: 14 } },
+                yaxis: { title: 'Uso (%)', titlefont: { size: 14 }, range: [0, 120] },
+                barmode: 'group',
+                height: 400,
+                margin: { l: 60, r: 40, t: 80, b: 60 },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white',
+                legend: { x: 0.7, y: 1 }
+            };
+
+            Plotly.newPlot('resource-usage-plot', [trace1, trace2], layout, { responsive: true });
+        }
+
+        // Gráfico de curvas ROC comparativas
+        function generateROCComparison() {
+            if (document.getElementById('comparative-roc-plot').hasChildNodes()) {
+                return;
+            }
+
+            const traces = [];
+            const colors = { sparse: '#11998e', hierarchical: '#667eea', hybrid: '#f5576c' };
+            const names = { sparse: 'Representaciones Dispersas', hierarchical: 'Fusión Jerárquica', hybrid: 'Modelo Híbrido' };
+
+            for (const [modelName, rocData] of Object.entries(evaluationData.roc_curves)) {
+                traces.push({
+                    x: rocData.fpr,
+                    y: rocData.tpr,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: `${names[modelName]} (AUC: ${(rocData.auc * 100).toFixed(2)}%)`,
+                    line: { color: colors[modelName], width: 3 }
+                });
+            }
+
+            // Línea diagonal de referencia
+            traces.push({
+                x: [0, 1],
+                y: [0, 1],
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Clasificador Aleatorio (AUC: 50%)',
+                line: { color: 'gray', width: 2, dash: 'dash' },
+                showlegend: true
+            });
+
+            const layout = {
+                title: { text: 'Curvas ROC Comparativas', font: { size: 20, color: '#667eea' } },
+                xaxis: { title: 'Tasa de Falsos Positivos (FPR)', titlefont: { size: 14 }, range: [0, 1] },
+                yaxis: { title: 'Tasa de Verdaderos Positivos (TPR)', titlefont: { size: 14 }, range: [0, 1] },
+                height: 600,
+                margin: { l: 60, r: 40, t: 80, b: 60 },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white',
+                legend: { x: 0.5, y: 0.1, xanchor: 'center' }
+            };
+
+            Plotly.newPlot('comparative-roc-plot', traces, layout, { responsive: true });
+        }
+
+        // Generar matrices de confusión
+        function generateConfusionMatrices() {
+            const models = ['sparse', 'hierarchical', 'hybrid'];
+            const names = { sparse: 'Representaciones Dispersas', hierarchical: 'Fusión Jerárquica', hybrid: 'Modelo Híbrido' };
+
+            models.forEach(modelName => {
+                const plotId = `confusion-${modelName}-plot`;
+                if (document.getElementById(plotId).hasChildNodes()) {
+                    return;
+                }
+
+                const cm = evaluationData.confusion_matrices[modelName];
+                const trace = {
+                    z: cm,
+                    type: 'heatmap',
+                    colorscale: [[0, '#f0f0f0'], [1, '#667eea']],
+                    showscale: true,
+                    text: cm.map(row => row.map(val => val.toString())),
+                    texttemplate: '%{text}',
+                    textfont: { size: 14, color: 'black' }
+                };
+
+                const layout = {
+                    title: { text: names[modelName], font: { size: 16, color: '#667eea' } },
+                    xaxis: { title: 'Predicción', tickvals: [0, 1], ticktext: ['Normal', 'SCD'] },
+                    yaxis: { title: 'Real', tickvals: [0, 1], ticktext: ['Normal', 'SCD'], autorange: 'reversed' },
+                    height: 350,
+                    margin: { l: 60, r: 40, t: 60, b: 60 },
+                    paper_bgcolor: 'white',
+                    plot_bgcolor: 'white'
+                };
+
+                Plotly.newPlot(plotId, [trace], layout, { responsive: true });
+            });
+        }
+
+        // Gráfico comparativo de métricas
+        function generateMetricsComparison() {
+            if (document.getElementById('comparative-metrics-plot').hasChildNodes()) {
+                return;
+            }
+
+            const models = ['Sparse', 'Hierarchical', 'Hybrid'];
+            const metrics = ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'AUC-ROC'];
+            const colors = ['#11998e', '#667eea', '#f5576c'];
+
+            const traces = [];
+            metrics.forEach((metric, idx) => {
+                const values = [];
+                models.forEach(model => {
+                    const modelKey = model.toLowerCase();
+                    let value = 0;
+                    if (metric === 'Accuracy') value = evaluationData.metrics[modelKey].accuracy;
+                    else if (metric === 'Precision') value = evaluationData.metrics[modelKey].precision;
+                    else if (metric === 'Recall') value = evaluationData.metrics[modelKey].recall;
+                    else if (metric === 'F1-Score') value = evaluationData.metrics[modelKey].f1;
+                    else if (metric === 'AUC-ROC') value = evaluationData.metrics[modelKey].auc;
+                    values.push(value * 100);
+                });
+
+                traces.push({
+                    x: models,
+                    y: values,
+                    name: metric,
+                    type: 'bar',
+                    marker: { color: colors[idx % colors.length] }
+                });
+            });
+
+            const layout = {
+                title: { text: 'Comparación de Métricas por Modelo', font: { size: 20, color: '#667eea' } },
+                xaxis: { title: 'Modelo', titlefont: { size: 14 } },
+                yaxis: { title: 'Valor (%)', titlefont: { size: 14 }, range: [0, 100] },
+                barmode: 'group',
+                height: 500,
+                margin: { l: 60, r: 40, t: 80, b: 60 },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white',
+                legend: { x: 0.7, y: 1 }
+            };
+
+            Plotly.newPlot('comparative-metrics-plot', traces, layout, { responsive: true });
+        }
+
+        // Generar gráficos al cargar la página si la pestaña está activa
+        window.addEventListener('load', function () {
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab) {
+                const tabName = activeTab.getAttribute('data-tab');
+                if (tabName === 'training-metrics') {
+                    generateAccuracyComparison();
+                } else if (tabName === 'training-performance') {
+                    generateTrainingTimePlot();
+                    generateResourceUsagePlot();
+                } else if (tabName === 'comparative-roc') {
+                    generateROCComparison();
+                    generateConfusionMatrices();
+                } else if (tabName === 'comparative-metrics') {
+                    generateMetricsComparison();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
