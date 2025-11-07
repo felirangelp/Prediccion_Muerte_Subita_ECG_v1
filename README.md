@@ -33,18 +33,81 @@ python scripts/verify_setup.py
 ### 3. Descargar Datasets
 
 ```bash
-# Descarga automática (recomendado)
-bash scripts/download_auto.sh
+# Opción A: Descarga persistente (GARANTIZA 100% - RECOMENDADO)
+python scripts/descarga_persistente.py
 
-# Monitorear progreso
-bash scripts/show_progress.sh
+# Opción B: Con supervisor automático
+python scripts/supervisor_descarga.py
+
+# Opción C: Descarga simple
+python scripts/descarga_maxima_velocidad.py
 ```
+
+**Nota:** Para documentación detallada sobre el proceso de descarga, ver [docs/DESCARGA_DATASETS.md](docs/DESCARGA_DATASETS.md)
 
 ### 4. Verificar Datasets
 
 ```bash
 # Verificar integridad de datasets
 python scripts/verify_datasets.py
+```
+
+## 🎯 Implementación Completa - Métodos de Predicción SCD
+
+Este proyecto implementa tres métodos avanzados para la predicción de muerte súbita cardíaca:
+
+1. **Representaciones Dispersas (Sparse Representations)**: Basado en Velázquez-González et al., Sensors 2021
+2. **Fusión Jerárquica de Características**: Basado en Huang et al., Symmetry 2025
+3. **Modelo Híbrido**: Combinación innovadora de ambos métodos usando wavelets
+
+### Características Principales
+
+- ✅ Optimizado para MacBook Pro M1 (GPU Metal)
+- ✅ Dashboard interactivo con Plotly
+- ✅ Preprocesamiento unificado
+- ✅ Análisis completo con métricas comparativas
+- ✅ Validación cruzada y análisis estadístico
+
+### Pipeline Completo
+
+```bash
+# Ejecutar pipeline completo (entrenamiento, evaluación, dashboard, análisis)
+python scripts/run_complete_pipeline.py --data-dir datasets/ --models-dir models/
+
+# O ejecutar pasos individuales:
+# 1. Entrenar modelos
+python scripts/train_models.py --train-all --data-dir datasets/ --models-dir models/
+
+# 2. Evaluar modelos
+python scripts/evaluate_models.py --models-dir models/ --data-dir datasets/
+
+# 3. Generar dashboard
+python scripts/generate_dashboard.py --output dashboard_scd_prediction.html
+
+# 4. Análisis completo
+python scripts/comprehensive_analysis.py --output-dir results/
+```
+
+### Estructura del Proyecto
+
+```
+├── src/
+│   ├── preprocessing_unified.py      # Preprocesamiento unificado
+│   ├── sparse_representations.py    # Método 1: Representaciones Dispersas
+│   ├── hierarchical_fusion.py       # Método 2: Fusión Jerárquica
+│   ├── hybrid_model.py              # Método 3: Modelo Híbrido
+│   ├── config_m1.py                 # Optimizaciones M1
+│   ├── gpu_optimizer.py             # Optimizaciones GPU
+│   └── utils.py                     # Utilidades
+├── scripts/
+│   ├── train_models.py              # Entrenar todos los modelos
+│   ├── evaluate_models.py          # Evaluar modelos
+│   ├── generate_dashboard.py       # Generar dashboard interactivo
+│   ├── comprehensive_analysis.py   # Análisis completo
+│   └── run_complete_pipeline.py    # Pipeline completo
+├── models/                          # Modelos entrenados (generado)
+├── results/                         # Resultados y reportes (generado)
+└── dashboard_scd_prediction.html    # Dashboard interactivo (generado)
 ```
 
 ## 📖 Guías Detalladas
@@ -100,7 +163,7 @@ cd Prediccion_Muerte_Subita_ECG_v1
 bash setup_env.sh
 
 # Descargar datasets automáticamente uno tras otro
-bash scripts/download_auto.sh
+python scripts/descarga_maxima_velocidad.py
 ```
 
 ### Opción 2: Configuración Manual
@@ -118,7 +181,7 @@ pip install -r requirements.txt
 mkdir -p datasets/sddb datasets/nsrdb datasets/cudb
 
 # 4. Descargar datasets automáticamente
-bash scripts/download_auto.sh
+python scripts/descarga_maxima_velocidad.py
 ```
 
 ## 📁 Estructura del Proyecto
@@ -130,8 +193,9 @@ Prediccion_Muerte_Subita_ECG_v1/
 │   ├── nsrdb/             # MIT-BIH Normal Sinus Rhythm
 │   └── cudb/              # CU Ventricular Tachyarrhythmia
 ├── scripts/               # Scripts de utilidad (simplificados)
-│   ├── download_auto.sh   # Descarga automática uno tras otro
-│   ├── show_progress.sh   # Monitoreo de progreso
+│   ├── descarga_maxima_velocidad.py   # Descarga optimizada con aria2c
+│   ├── monitor_aria2c.py   # Monitor en tiempo real
+│   ├── validacion_completa.py   # Validación de integridad
 │   └── verify_datasets.py # Verificación de datasets
 ├── src/                   # Código fuente del proyecto
 │   ├── __init__.py
@@ -151,21 +215,21 @@ Prediccion_Muerte_Subita_ECG_v1/
 
 ```bash
 # Descarga automática uno tras otro (recomendado)
-bash scripts/download_auto.sh
+python scripts/descarga_maxima_velocidad.py
 ```
 
 **Lo que hace automáticamente:**
-- ✅ Detecta si SCDH está descargando
-- ⏳ Espera a que termine SCDH
-- 🚀 Inicia automáticamente NSRDB
-- 🚀 Inicia automáticamente CUDB cuando termine NSRDB
-- ✅ Verifica todo al final
+- ✅ Instala aria2c si no está disponible
+- ✅ Limpia archivos temporales y datasets incompletos
+- ✅ Descarga los 3 datasets en paralelo (200 procesos simultáneos)
+- ✅ Usa 16 conexiones por archivo con aria2c para máxima velocidad
+- ✅ Verifica la integridad al finalizar
 
 ### Monitorear Progreso
 
 ```bash
 # Ver progreso actual de descarga
-bash scripts/show_progress.sh
+python scripts/monitor_aria2c.py
 ```
 
 ### Verificar Descarga
@@ -211,13 +275,16 @@ print(f"Características extraídas: {len(features)}")
 ### Scripts Esenciales (Solo 3)
 
 ```bash
-# 1. Descargar datasets automáticamente uno tras otro
-bash scripts/download_auto.sh
+# 1. Descargar datasets optimizado con aria2c
+python scripts/descarga_maxima_velocidad.py
 
-# 2. Monitorear progreso de descarga
-bash scripts/show_progress.sh
+# 2. Monitorear progreso de descarga (en otra terminal)
+python scripts/monitor_aria2c.py
 
-# 3. Verificar que los datasets se descargaron correctamente
+# 3. Verificar integridad completa
+python scripts/validacion_completa.py
+
+# O verificación básica
 python scripts/verify_datasets.py
 ```
 
@@ -247,16 +314,15 @@ wget -r -N -c -np https://physionet.org/files/cudb/1.0.0/
 - ❌ `download_simple.sh` - Redundante
 
 ### ✅ Scripts Finales (Solo 3)
-- ✅ `download_auto.sh` - **Descarga automática uno tras otro**
-- ✅ `show_progress.sh` - **Monitoreo de progreso**
+- ✅ `descarga_maxima_velocidad.py` - **Descarga optimizada con aria2c (200 procesos simultáneos)**
+- ✅ `monitor_aria2c.py` - **Monitor en tiempo real con velocidad y ETA**
+- ✅ `validacion_completa.py` - **Validación completa de integridad**
 - ✅ `verify_datasets.py` - **Verificación de datasets**
 
-### 🤖 Sistema Automatizado
-- **SCDH**: Descarga automática con wget
-- **NSRDB**: Se inicia automáticamente cuando termine SCDH
-- **CUDB**: Se inicia automáticamente cuando termine NSRDB
-- **Monitoreo**: Cada 30 segundos automáticamente
-- **Verificación**: Automática al final
+### 🤖 Sistema Optimizado
+- **Descarga paralela**: 200 procesos simultáneos con ThreadPoolExecutor
+- **aria2c**: 16 conexiones por archivo para máxima velocidad
+- **Verificación automática**: Integridad completa al finalizar
 
 ## ⏱️ Cronograma de Descarga
 
@@ -379,8 +445,11 @@ Este proyecto es para fines educativos y de investigación. Los datasets de Phys
 ### 🚀 Comando Principal
 
 ```bash
-# Un solo comando para todo
-bash scripts/download_auto.sh
+# Descargar datasets con máxima velocidad
+python scripts/descarga_maxima_velocidad.py
+
+# Ver documentación detallada
+cat docs/DESCARGA_DATASETS.md
 ```
 
 ### 📊 Estado Actual (Ejemplo)

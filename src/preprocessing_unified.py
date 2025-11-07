@@ -167,15 +167,25 @@ def downsample_signal(signal_data: np.ndarray, original_fs: float,
     
     if method == 'decimate':
         # Usar decimate de scipy (anti-aliasing incluido)
-        decimation_factor = int(ratio)
+        # Solo usar decimate si el ratio es cercano a un entero (dentro de 0.1)
+        decimation_factor = int(round(ratio))
         
-        if signal_data.ndim == 1:
-            downsampled = signal.decimate(signal_data, decimation_factor, ftype='fir')
-        else:
-            downsampled = np.zeros((len(signal_data) // decimation_factor, signal_data.shape[1]))
-            for channel in range(signal_data.shape[1]):
-                downsampled[:, channel] = signal.decimate(signal_data[:, channel], 
-                                                         decimation_factor, ftype='fir')
+        # Si el ratio no es cercano a un entero, usar resample en su lugar
+        if abs(ratio - decimation_factor) > 0.1:
+            method = 'resample'
+        
+        if method == 'decimate':
+            try:
+                if signal_data.ndim == 1:
+                    downsampled = signal.decimate(signal_data, decimation_factor, ftype='fir')
+                else:
+                    downsampled = np.zeros((len(signal_data) // decimation_factor, signal_data.shape[1]))
+                    for channel in range(signal_data.shape[1]):
+                        downsampled[:, channel] = signal.decimate(signal_data[:, channel], 
+                                                                 decimation_factor, ftype='fir')
+            except (ValueError, TypeError):
+                # Si decimate falla, cambiar a resample
+                method = 'resample'
     elif method == 'resample':
         # Resample de scipy
         num_samples = int(len(signal_data) / ratio)
@@ -272,20 +282,46 @@ def preprocess_unified(ecg_signal: np.ndarray, fs: float,
     # 1. Filtrado paso banda
     if apply_filter:
         processed_signal = bandpass_filter(processed_signal, fs)
+        # Limpiar NaN/Inf después del filtro
+        processed_signal = np.nan_to_num(processed_signal, nan=0.0, posinf=0.0, neginf=0.0)
         metadata['processing_steps'].append('bandpass_filter')
     
     # 2. Normalización
     if apply_normalize:
         processed_signal = normalize_signal(processed_signal, method=normalize_method)
+        # Limpiar NaN/Inf después de la normalización
+        processed_signal = np.nan_to_num(processed_signal, nan=0.0, posinf=0.0, neginf=0.0)
         metadata['processing_steps'].append(f'normalize_{normalize_method}')
     
     # 3. Diezmado (si es necesario)
     if target_fs is not None and target_fs != fs:
         processed_signal, effective_fs = downsample_signal(processed_signal, fs, target_fs)
+        # Limpiar NaN/Inf después del diezmado
+        processed_signal = np.nan_to_num(processed_signal, nan=0.0, posinf=0.0, neginf=0.0)
         metadata['effective_fs'] = effective_fs
         metadata['processing_steps'].append(f'downsample_{fs}_to_{target_fs}')
     else:
         metadata['effective_fs'] = fs
+    
+    # Limpieza final de NaN/Inf
+    processed_signal = np.nan_to_num(processed_signal, nan=0.0, posinf=0.0, neginf=0.0)
+    
+    # Verificar que la señal final es válida
+    if len(processed_signal) == 0 or np.all(processed_signal == 0):
+        # Si la señal es completamente cero, intentar sin normalización
+        if apply_normalize:
+            # Reiniciar con señal original
+            processed_signal = ecg_signal.copy()
+            if apply_filter:
+                processed_signal = bandpass_filter(processed_signal, fs)
+                processed_signal = np.nan_to_num(processed_signal, nan=0.0, posinf=0.0, neginf=0.0)
+            if target_fs is not None and target_fs != fs:
+                processed_signal, effective_fs = downsample_signal(processed_signal, fs, target_fs)
+                processed_signal = np.nan_to_num(processed_signal, nan=0.0, posinf=0.0, neginf=0.0)
+                metadata['effective_fs'] = effective_fs
+            else:
+                metadata['effective_fs'] = fs
+            processed_signal = np.nan_to_num(processed_signal, nan=0.0, posinf=0.0, neginf=0.0)
     
     # 4. Segmentación (opcional)
     segments = None
