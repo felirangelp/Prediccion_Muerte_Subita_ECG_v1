@@ -192,7 +192,7 @@ def check_data_availability(results_dir: str = "results") -> Dict[str, bool]:
         'temporal_results': (results_path / 'temporal_results.pkl').exists(),
         'multiclass_results': (results_path / 'multiclass_results.pkl').exists(),
         'inter_patient_results': (results_path / 'inter_patient_results.pkl').exists(),
-        'papers_comparison': (results_path / 'papers_comparison.pkl').exists(),
+        'papers_comparison': (results_path / 'papers_comparison_results.pkl').exists() or (results_path / 'papers_comparison.pkl').exists(),
         'evaluation_results': (results_path / 'evaluation_results.pkl').exists(),
     }
     return availability
