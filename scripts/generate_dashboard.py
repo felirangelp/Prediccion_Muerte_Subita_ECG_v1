@@ -2005,16 +2005,25 @@ python scripts/train_models_temporal.py</pre>
             
             // Activar generación de gráficos cuando se abren las pestañas
             document.addEventListener('DOMContentLoaded', function() {{
+                console.log('[Temporal] DOMContentLoaded disparado');
+                
                 const temporalOverviewTab = document.querySelector('[data-tab="temporal-overview"]');
                 const temporalComparisonTab = document.querySelector('[data-tab="temporal-comparison"]');
                 const temporalVisualizationTab = document.querySelector('[data-tab="temporal-visualization"]');
                 const temporalAnalysisTab = document.querySelector('[data-tab="temporal-analysis"]');
                 
+                console.log('[Temporal] temporalOverviewTab encontrado:', !!temporalOverviewTab);
+                console.log('[Temporal] temporalOverviewTab tiene clase active:', temporalOverviewTab?.classList.contains('active'));
+                
                 if (temporalOverviewTab && temporalOverviewTab.classList.contains('active')) {{
+                    console.log('[Temporal] Ejecutando generateAccuracyVsTimePlot después de 500ms');
                     setTimeout(() => {{
+                        console.log('[Temporal] Timeout ejecutado, llamando generateAccuracyVsTimePlot');
                         generateAccuracyVsTimePlot();
                         generateTemporalResultsTable();
                     }}, 500);
+                }} else {{
+                    console.log('[Temporal] ⚠️  temporalOverviewTab no está activo al cargar');
                 }}
                 
                 if (temporalComparisonTab && temporalComparisonTab.classList.contains('active')) {{
