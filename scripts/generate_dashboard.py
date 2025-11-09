@@ -1628,10 +1628,22 @@ python scripts/train_models_temporal.py</pre>
                     line: {{ width: 2, color: '#999', dash: 'dash' }}
                 }});
                 
+                // Calcular el rango dinámico basado en los datos
+                let minY = 85;
+                let maxY = 100;
+                traces.forEach(trace => {{
+                    if (trace.y && trace.y.length > 0) {{
+                        const traceMin = Math.min(...trace.y);
+                        const traceMax = Math.max(...trace.y);
+                        minY = Math.min(minY, traceMin - 2); // Agregar margen
+                        maxY = Math.max(maxY, traceMax + 2);
+                    }}
+                }});
+                
                 const layout = {{
                     title: {{ text: 'Precisión vs Minutos Antes de SCD', font: {{ size: 20, color: '#667eea' }} }},
                     xaxis: {{ title: 'Minutos Antes de SCD', titlefont: {{ size: 14 }} }},
-                    yaxis: {{ title: 'Precisión (%)', titlefont: {{ size: 14 }}, range: [85, 100] }},
+                    yaxis: {{ title: 'Precisión (%)', titlefont: {{ size: 14 }}, range: [minY, maxY] }},
                     height: 500,
                     margin: {{ l: 60, r: 40, t: 80, b: 60 }},
                     paper_bgcolor: 'white',
