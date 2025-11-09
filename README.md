@@ -6,6 +6,42 @@ Proyecto para análisis y predicción de muerte súbita cardíaca usando señale
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![PhysioNet](https://img.shields.io/badge/Data-PhysioNet-red.svg)](https://physionet.org)
 
+## 📊 Dashboard Interactivo
+
+El dashboard interactivo del proyecto está disponible en GitHub Pages:
+
+🔗 **[Ver Dashboard en GitHub Pages](https://felirangelp.github.io/Prediccion_Muerte_Subita_ECG_v1/)**
+
+### Configuración de GitHub Pages
+
+Para publicar el dashboard en GitHub Pages:
+
+1. **El dashboard ya está configurado** en la carpeta `docs/` como `index.html`
+2. Ve a **Settings** → **Pages** en tu repositorio de GitHub
+3. En **Source**, selecciona **Deploy from a branch**
+4. Selecciona la rama **main** y la carpeta **/docs**
+5. Haz clic en **Save**
+6. Espera unos minutos y el dashboard estará disponible en: `https://felirangelp.github.io/Prediccion_Muerte_Subita_ECG_v1/`
+
+**Nota:** El archivo `.nojekyll` en `docs/` evita problemas comunes de 404 en GitHub Pages.
+
+### Actualizar el Dashboard
+
+Para actualizar el dashboard después de regenerarlo:
+
+```bash
+# Opción 1: Usar el script automático (recomendado)
+./scripts/update_github_pages.sh
+
+# Opción 2: Manual
+cp results/dashboard_scd_prediction.html docs/index.html
+git add docs/index.html
+git commit -m "Actualizar dashboard"
+git push origin main
+```
+
+Para más detalles, consulta [docs/GITHUB_PAGES_SETUP.md](docs/GITHUB_PAGES_SETUP.md).
+
 ## 🚀 Inicio Rápido
 
 ### 1. Clonar y Configurar
