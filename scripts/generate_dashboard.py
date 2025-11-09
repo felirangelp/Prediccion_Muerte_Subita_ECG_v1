@@ -1513,6 +1513,10 @@ python scripts/train_models_temporal.py</pre>
             <div id="temporal-overview" class="tab-content active">
                 <h3>📊 Rendimiento por Distancia Temporal al Evento SCD</h3>
                 <p>Este gráfico muestra cómo varía el accuracy de los modelos según los minutos antes del evento de muerte súbita cardíaca. Permite identificar en qué ventanas temporales los modelos tienen mejor rendimiento.</p>
+                <div id="temporal-data-warning" style="display: none; padding: 15px; margin-bottom: 20px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                    <strong>⚠️ Advertencia sobre la confiabilidad de los datos:</strong>
+                    <p style="margin: 5px 0 0 0;">Algunos intervalos tienen muy pocas muestras (n_samples ≤ 5), lo que hace que los resultados no sean estadísticamente confiables. Los valores de accuracy pueden variar significativamente debido al tamaño de muestra insuficiente.</p>
+                </div>
                 <div class="plot-container" id="accuracy-vs-time-plot"></div>
             </div>
             
@@ -1547,16 +1551,45 @@ python scripts/train_models_temporal.py</pre>
             // Datos temporales disponibles
             const temporalData = {temporal_data_json};
             
+            // Verificar si hay datos con pocas muestras
+            function checkLowSampleSizes() {{
+                if (!temporalData || !temporalData.results_by_model) return false;
+                
+                const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
+                const validIntervals = intervals.filter(i => i > 0);
+                const models = Object.keys(temporalData.results_by_model);
+                
+                let hasLowSamples = false;
+                models.forEach(modelName => {{
+                    const modelData = temporalData.results_by_model[modelName];
+                    if (!modelData) return;
+                    
+                    const mapping = mapKeysToIntervals(modelData, intervals);
+                    validIntervals.forEach(interval => {{
+                        if (mapping[interval] !== undefined && mapping[interval].n_samples <= 5) {{
+                            hasLowSamples = true;
+                        }}
+                    }});
+                }});
+                
+                return hasLowSamples;
+            }}
+            
             // Generar gráfico de precisión vs tiempo
             function generateAccuracyVsTimePlot() {{
-                if (document.getElementById('accuracy-vs-time-plot').hasChildNodes()) {{
+                const plotDiv = document.getElementById('accuracy-vs-time-plot');
+                if (!plotDiv) return;
+                if (plotDiv.hasChildNodes()) return;
+                
+                if (!temporalData || !temporalData.results_by_model) {{
+                    plotDiv.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
                     return;
                 }}
                 
-                if (!temporalData || !temporalData.results_by_model) {{
-                    document.getElementById('accuracy-vs-time-plot').innerHTML = 
-                        '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
-                    return;
+                // Mostrar advertencia si hay muestras pequeñas
+                const warningDiv = document.getElementById('temporal-data-warning');
+                if (warningDiv && checkLowSampleSizes()) {{
+                    warningDiv.style.display = 'block';
                 }}
                 
                 const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
@@ -1573,26 +1606,31 @@ python scripts/train_models_temporal.py</pre>
                     const modelData = temporalData.results_by_model[modelName];
                     if (!modelData) return;
                     
-                    // Obtener claves disponibles y mapearlas a intervalos válidos
-                    const availableKeys = Object.keys(modelData).map(k => parseInt(k)).filter(k => !isNaN(k)).sort((a, b) => a - b);
-                    const validIntervals = intervals.filter(i => i > 0);
-                    
+                    const mapping = mapKeysToIntervals(modelData, intervals);
                     const accuracies = [];
                     const xValues = [];
+                    const hoverTexts = [];
                     
-                    // Mapear claves [1,2,3,4,5] a intervalos [5,10,15,20,25]
-                    availableKeys.forEach((key, keyIdx) => {{
-                        if (keyIdx < validIntervals.length) {{
-                            const interval = validIntervals[keyIdx];
-                            const keyStr = String(key);
+                    const validIntervals = intervals.filter(i => i > 0);
+                    validIntervals.forEach(interval => {{
+                        if (mapping[interval] !== undefined) {{
+                            const result = mapping[interval];
+                            const acc = result.accuracy;
+                            const nSamples = result.n_samples || 0;
                             
-                            if (modelData[keyStr] !== undefined) {{
-                                // Usar accuracy directamente (como en la versión original)
-                                const acc = modelData[keyStr].accuracy;
-                                if (acc !== null && acc !== undefined && !isNaN(acc)) {{
-                                    accuracies.push(acc * 100);
-                                    xValues.push(interval);
+                            if (acc !== null && acc !== undefined && !isNaN(acc)) {{
+                                accuracies.push(acc * 100);
+                                xValues.push(interval);
+                                
+                                // Agregar información de n_samples en hover
+                                let hoverText = `${{modelNames[modelName] || modelName}}<br>`;
+                                hoverText += `${{interval}} min antes de SCD<br>`;
+                                hoverText += `Accuracy: ${{(acc * 100).toFixed(2)}}%<br>`;
+                                hoverText += `N muestras: ${{nSamples}}`;
+                                if (nSamples <= 5) {{
+                                    hoverText += ` ⚠️ (poco confiable)`;
                                 }}
+                                hoverTexts.push(hoverText);
                             }}
                         }}
                     }});
@@ -1605,7 +1643,9 @@ python scripts/train_models_temporal.py</pre>
                             type: 'scatter',
                             mode: 'lines+markers',
                             marker: {{ size: 10, color: colors[modelName] || '#666' }},
-                            line: {{ width: 2, color: colors[modelName] || '#666' }}
+                            line: {{ width: 2, color: colors[modelName] || '#666' }},
+                            text: hoverTexts,
+                            hoverinfo: 'text'
                         }});
                     }}
                 }});
@@ -1712,15 +1752,24 @@ python scripts/train_models_temporal.py</pre>
                         // Usar mapeo correcto
                         const mapping = mapKeysToIntervals(modelData, intervals);
                         if (mapping[interval] !== undefined) {{
-                            const acc = mapping[interval].accuracy * 100;
-                            const prec = mapping[interval].precision * 100;
-                            const rec = mapping[interval].recall * 100;
-                            const f1 = mapping[interval].f1_score * 100;
+                            const result = mapping[interval];
+                            const acc = result.accuracy * 100;
+                            const prec = result.precision * 100;
+                            const rec = result.recall * 100;
+                            const f1 = result.f1_score * 100;
+                            const nSamples = result.n_samples || 0;
+                            
+                            // Color de advertencia si hay pocas muestras
+                            const warningStyle = nSamples <= 5 ? 'color: #ff9800; font-weight: bold;' : '';
+                            const warningIcon = nSamples <= 5 ? ' ⚠️' : '';
                             
                             tableHTML += `<td style="padding: 12px; text-align: center;">`;
                             tableHTML += `<div style="font-weight: bold; color: #667eea;">${{acc.toFixed(2)}}%</div>`;
                             tableHTML += `<div style="font-size: 0.85em; color: #666; margin-top: 4px;">`;
                             tableHTML += `P: ${{prec.toFixed(1)}}% | R: ${{rec.toFixed(1)}}% | F1: ${{f1.toFixed(1)}}%`;
+                            tableHTML += `</div>`;
+                            tableHTML += `<div style="font-size: 0.75em; ${{warningStyle}} margin-top: 4px;">`;
+                            tableHTML += `N=${{nSamples}}${{warningIcon}}`;
                             tableHTML += `</div></td>`;
                         }} else {{
                             tableHTML += '<td style="padding: 12px; text-align: center; color: #999;">-</td>';
