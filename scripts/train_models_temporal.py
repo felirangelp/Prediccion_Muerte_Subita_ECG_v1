@@ -10,7 +10,7 @@ from pathlib import Path
 import pickle
 import argparse
 from typing import Dict, List, Optional
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
 sys.path.append(str(Path(__file__).parent.parent))
@@ -187,7 +187,9 @@ def train_models_by_interval(temporal_data: Dict,
                              model_types: List[str] = ['sparse', 'hierarchical', 'hybrid'],
                              scheme: str = 'sensors',
                              binary_classification: bool = False,
-                             test_size: float = 0.2) -> TemporalAnalysisResults:
+                             test_size: float = 0.2,
+                             min_test_samples: int = 10,
+                             use_cross_validation: bool = False) -> TemporalAnalysisResults:
     """
     Entrenar modelos para cada intervalo temporal
     
@@ -253,47 +255,165 @@ def train_models_by_interval(temporal_data: Dict,
             X_interval = interval_segments
             y_interval = np.array(interval_labels)
             
-            X_train, X_test, y_train, y_test = train_test_split(
-                X_interval, y_interval, test_size=test_size, random_state=42, stratify=y_interval
-            )
+            # Verificar distribución de clases
+            unique_classes, class_counts = np.unique(y_interval, return_counts=True)
+            print(f"   Distribución de clases: {dict(zip(unique_classes, class_counts))}")
             
-            print(f"   Entrenamiento: {len(X_train)} muestras")
-            print(f"   Prueba: {len(X_test)} muestras")
+            # Ajustar test_size dinámicamente para asegurar suficientes muestras en test
+            min_test_per_class = 3  # Mínimo de muestras por clase en test
+            
+            # Calcular test_size adaptativo
+            total_samples = len(y_interval)
+            min_samples_needed = min_test_samples
+            for count in class_counts:
+                min_samples_needed = max(min_samples_needed, min_test_per_class * 2)  # Asegurar balance
+            
+            if total_samples < min_samples_needed:
+                print(f"   ⚠️  ADVERTENCIA: Solo {total_samples} muestras disponibles (mínimo recomendado: {min_samples_needed})")
+                print(f"   ⚠️  Los resultados pueden no ser confiables")
+                # Usar un test_size más pequeño pero asegurar al menos 2 muestras por clase
+                adaptive_test_size = max(0.1, min_test_per_class * len(unique_classes) / total_samples)
+                adaptive_test_size = min(adaptive_test_size, 0.3)  # No más del 30%
+            else:
+                # Calcular test_size que asegure suficientes muestras
+                adaptive_test_size = max(test_size, min_samples_needed / total_samples)
+                adaptive_test_size = min(adaptive_test_size, 0.3)  # No más del 30%
+            
+            # Verificar que stratify sea posible
+            can_stratify = all(count >= 2 for count in class_counts) and len(unique_classes) > 1
+            
+            if can_stratify:
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X_interval, y_interval, 
+                    test_size=adaptive_test_size, 
+                    random_state=42, 
+                    stratify=y_interval
+                )
+            else:
+                print(f"   ⚠️  No se puede usar stratify (muy pocas muestras por clase), usando división aleatoria")
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X_interval, y_interval, 
+                    test_size=adaptive_test_size, 
+                    random_state=42
+                )
+            
+            # Verificar distribución final
+            train_classes, train_counts = np.unique(y_train, return_counts=True)
+            test_classes, test_counts = np.unique(y_test, return_counts=True)
+            
+            print(f"   Entrenamiento: {len(X_train)} muestras (distribución: {dict(zip(train_classes, train_counts))})")
+            print(f"   Prueba: {len(X_test)} muestras (distribución: {dict(zip(test_classes, test_counts))})")
+            
+            # Advertencia si hay muy pocas muestras en test
+            if len(X_test) < min_test_samples:
+                print(f"   ⚠️  ADVERTENCIA: Solo {len(X_test)} muestras en test (mínimo recomendado: {min_test_samples})")
+            if any(count < min_test_per_class for count in test_counts):
+                print(f"   ⚠️  ADVERTENCIA: Algunas clases tienen menos de {min_test_per_class} muestras en test")
             
             # Entrenar cada tipo de modelo
             for model_type in model_types:
                 try:
                     # Verificar balance de clases antes de entrenar sparse
                     if model_type == 'sparse':
-                        unique_classes, counts = np.unique(y_train, return_counts=True)
+                        unique_classes_train, counts = np.unique(y_train, return_counts=True)
                         min_class_count = min(counts)
                         if min_class_count < 10:
                             print(f"   ⚠️  Omitiendo modelo sparse para intervalo {interval}: clase minoritaria tiene solo {min_class_count} muestras")
                             continue
                     
-                    results = train_model_by_interval(
-                        model_type, X_train, y_train, X_test, y_test,
-                        interval_label=str(interval), fs=128.0
-                    )
-                    
-                    # Crear TemporalIntervalResult
-                    interval_result = TemporalIntervalResult(
-                        interval_minutes=interval if isinstance(interval, int) else interval[0],
-                        accuracy=results['accuracy'],
-                        precision=results['precision'],
-                        recall=results['recall'],
-                        f1_score=results['f1_score'],
-                        auc_roc=results['auc_roc'],
-                        confusion_matrix=results['confusion_matrix'],
-                        predictions=results['predictions'],
-                        probabilities=results['probabilities'],
-                        n_samples=results['n_samples']
-                    )
+                    if use_cross_validation and len(X_interval) >= 20:
+                        # Usar validación cruzada para obtener resultados más confiables
+                        print(f"   🔄 Usando validación cruzada (5-fold) para {model_type}...")
+                        n_folds = min(5, min(class_counts) // 2)  # Asegurar al menos 2 muestras por clase por fold
+                        n_folds = max(3, n_folds)  # Mínimo 3 folds
+                        
+                        skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)
+                        fold_accuracies = []
+                        fold_precisions = []
+                        fold_recalls = []
+                        fold_f1s = []
+                        fold_aucs = []
+                        all_test_predictions = []
+                        all_test_probs = []
+                        all_test_labels = []
+                        
+                        for fold_idx, (train_idx, test_idx) in enumerate(skf.split(X_interval, y_interval)):
+                            X_train_fold = [X_interval[i] for i in train_idx]
+                            X_test_fold = [X_interval[i] for i in test_idx]
+                            y_train_fold = y_interval[train_idx]
+                            y_test_fold = y_interval[test_idx]
+                            
+                            fold_results = train_model_by_interval(
+                                model_type, X_train_fold, y_train_fold, X_test_fold, y_test_fold,
+                                interval_label=f"{interval}_fold{fold_idx}", fs=128.0
+                            )
+                            
+                            fold_accuracies.append(fold_results['accuracy'])
+                            fold_precisions.append(fold_results['precision'])
+                            fold_recalls.append(fold_results['recall'])
+                            fold_f1s.append(fold_results['f1_score'])
+                            fold_aucs.append(fold_results['auc_roc'])
+                            all_test_predictions.extend(fold_results['predictions'])
+                            all_test_probs.extend(fold_results['probabilities'].tolist() if hasattr(fold_results['probabilities'], 'tolist') else fold_results['probabilities'])
+                            all_test_labels.extend(y_test_fold)
+                        
+                        # Promediar resultados de todos los folds
+                        avg_accuracy = np.mean(fold_accuracies)
+                        avg_precision = np.mean(fold_precisions)
+                        avg_recall = np.mean(fold_recalls)
+                        avg_f1 = np.mean(fold_f1s)
+                        avg_auc = np.mean(fold_aucs)
+                        
+                        # Calcular métricas agregadas sobre todas las predicciones
+                        all_test_predictions = np.array(all_test_predictions)
+                        all_test_labels = np.array(all_test_labels)
+                        aggregated_accuracy = accuracy_score(all_test_labels, all_test_predictions)
+                        
+                        print(f"   ✅ CV Results - Accuracy: {avg_accuracy:.4f} ± {np.std(fold_accuracies):.4f}")
+                        print(f"      (Agregado: {aggregated_accuracy:.4f})")
+                        
+                        # Crear matriz de confusión agregada
+                        aggregated_cm = confusion_matrix(all_test_labels, all_test_predictions)
+                        
+                        interval_result = TemporalIntervalResult(
+                            interval_minutes=interval if isinstance(interval, int) else interval[0],
+                            accuracy=aggregated_accuracy,  # Usar accuracy agregado
+                            precision=avg_precision,
+                            recall=avg_recall,
+                            f1_score=avg_f1,
+                            auc_roc=avg_auc,
+                            confusion_matrix=aggregated_cm,
+                            predictions=all_test_predictions,
+                            probabilities=np.array(all_test_probs),
+                            n_samples=len(all_test_labels)
+                        )
+                    else:
+                        # División simple train/test
+                        results = train_model_by_interval(
+                            model_type, X_train, y_train, X_test, y_test,
+                            interval_label=str(interval), fs=128.0
+                        )
+                        
+                        # Crear TemporalIntervalResult
+                        interval_result = TemporalIntervalResult(
+                            interval_minutes=interval if isinstance(interval, int) else interval[0],
+                            accuracy=results['accuracy'],
+                            precision=results['precision'],
+                            recall=results['recall'],
+                            f1_score=results['f1_score'],
+                            auc_roc=results['auc_roc'],
+                            confusion_matrix=results['confusion_matrix'],
+                            predictions=results['predictions'],
+                            probabilities=results['probabilities'],
+                            n_samples=results['n_samples']
+                        )
                     
                     temporal_results.add_result(model_type, interval, interval_result)
                     
                 except Exception as e:
                     print(f"   ⚠️  Error entrenando {model_type} para intervalo {interval}: {e}")
+                    import traceback
+                    traceback.print_exc()
                     continue
     
     else:
@@ -372,7 +492,11 @@ def main():
                        default=['sparse', 'hierarchical', 'hybrid'],
                        help='Modelos a entrenar')
     parser.add_argument('--test-size', type=float, default=0.2,
-                       help='Proporción de datos para prueba')
+                       help='Proporción de datos para prueba (se ajusta automáticamente si hay pocas muestras)')
+    parser.add_argument('--min-test-samples', type=int, default=10,
+                       help='Mínimo de muestras requeridas en conjunto de prueba')
+    parser.add_argument('--use-cross-validation', action='store_true',
+                       help='Usar validación cruzada en lugar de división simple (recomendado para pocas muestras)')
     
     args = parser.parse_args()
     
@@ -393,7 +517,9 @@ def main():
         model_types=args.models,
         scheme=args.scheme,
         binary_classification=args.binary,
-        test_size=args.test_size
+        test_size=args.test_size,
+        min_test_samples=args.min_test_samples,
+        use_cross_validation=args.use_cross_validation
     )
     
     # Guardar resultados
