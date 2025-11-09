@@ -1500,35 +1500,45 @@ python scripts/train_models_temporal.py</pre>
         html = f"""
         <div class="section">
             <h2>⏱️ Análisis Temporal por Intervalos Pre-SCD</h2>
+            <p style="margin-bottom: 20px; color: #666;">Análisis del rendimiento de los modelos según la distancia temporal al evento de muerte súbita cardíaca. Evalúa la capacidad predictiva en diferentes ventanas temporales antes del evento.</p>
+            
             <div class="tabs">
-                <button class="tab active" data-tab="temporal-overview">Resumen</button>
-                <button class="tab" data-tab="temporal-comparison">Comparación con Papers</button>
-                <button class="tab" data-tab="temporal-visualization">Visualizaciones</button>
-                <button class="tab" data-tab="temporal-analysis">Análisis Detallado</button>
+                <button class="tab active" data-tab="temporal-overview">📊 Gráfico Principal</button>
+                <button class="tab" data-tab="temporal-table">📋 Tabla de Resultados</button>
+                <button class="tab" data-tab="temporal-comparison">📚 Comparación con Papers</button>
+                <button class="tab" data-tab="temporal-visualization">📈 Heatmap</button>
+                <button class="tab" data-tab="temporal-analysis">🔬 Análisis Estadístico</button>
             </div>
             
             <div id="temporal-overview" class="tab-content active">
-                <h3>📊 Precisión por Distancia Temporal al Evento SCD</h3>
-                <p>Esta sección analiza cómo varía la precisión de los modelos según la distancia temporal al evento de muerte súbita cardíaca.</p>
+                <h3>📊 Rendimiento por Distancia Temporal al Evento SCD</h3>
+                <p>Este gráfico muestra cómo varía el accuracy de los modelos según los minutos antes del evento de muerte súbita cardíaca. Permite identificar en qué ventanas temporales los modelos tienen mejor rendimiento.</p>
                 <div class="plot-container" id="accuracy-vs-time-plot"></div>
-                <h3 style="margin-top: 40px;">📋 Resultados por Intervalo Temporal</h3>
+            </div>
+            
+            <div id="temporal-table" class="tab-content">
+                <h3>📋 Resultados Detallados por Intervalo Temporal</h3>
+                <p>Tabla completa con los valores de accuracy para cada modelo en cada intervalo temporal analizado.</p>
                 <div id="temporal-results-table"></div>
             </div>
             
             <div id="temporal-comparison" class="tab-content">
                 <h3>📚 Comparación con Resultados de Papers Científicos</h3>
+                <p>Comparación directa de nuestros modelos con los resultados reportados en el paper "Sensors 2021", permitiendo contextualizar el rendimiento obtenido.</p>
                 <div class="plot-container" id="paper-comparison-plot"></div>
-                <h3 style="margin-top: 40px;">📊 Tabla Comparativa Detallada</h3>
+                <h3 style="margin-top: 40px;">📊 Tabla Comparativa</h3>
                 <div id="papers-comparison-table"></div>
             </div>
             
             <div id="temporal-visualization" class="tab-content">
-                <h3>📈 Visualizaciones Adicionales</h3>
+                <h3>📈 Heatmap de Rendimiento</h3>
+                <p>Visualización en formato heatmap que permite identificar rápidamente los intervalos temporales con mejor y peor rendimiento para cada modelo.</p>
                 <div class="plot-container" id="temporal-heatmap-plot"></div>
             </div>
             
             <div id="temporal-analysis" class="tab-content">
                 <h3>🔬 Análisis Estadístico Detallado</h3>
+                <p>Estadísticas descriptivas (promedio, desviación estándar, mínimo, máximo) del rendimiento de cada modelo a través de todos los intervalos temporales.</p>
                 <div id="temporal-statistical-analysis"></div>
             </div>
         </div>
@@ -1628,9 +1638,9 @@ python scripts/train_models_temporal.py</pre>
                 maxY = Math.min(100, maxY + 5);
                 
                 const layout = {{
-                    title: {{ text: 'Precisión vs Minutos Antes de SCD', font: {{ size: 20, color: '#667eea' }} }},
+                    title: {{ text: 'Accuracy vs Minutos Antes de SCD', font: {{ size: 20, color: '#667eea' }} }},
                     xaxis: {{ title: 'Minutos Antes de SCD', titlefont: {{ size: 14 }} }},
-                    yaxis: {{ title: 'Precisión (%)', titlefont: {{ size: 14 }}, range: [minY, maxY] }},
+                    yaxis: {{ title: 'Accuracy (%)', titlefont: {{ size: 14 }}, range: [minY, maxY] }},
                     height: 500,
                     margin: {{ l: 60, r: 40, t: 80, b: 60 }},
                     paper_bgcolor: 'white',
@@ -1641,51 +1651,102 @@ python scripts/train_models_temporal.py</pre>
                 Plotly.newPlot('accuracy-vs-time-plot', traces, layout, {{ responsive: true }});
             }}
             
+            // Función auxiliar para mapear claves a intervalos
+            function mapKeysToIntervals(modelData, intervals) {{
+                const availableKeys = Object.keys(modelData).map(k => parseInt(k)).filter(k => !isNaN(k)).sort((a, b) => a - b);
+                const validIntervals = intervals.filter(i => i > 0);
+                const mapping = {{}};
+                
+                availableKeys.forEach((key, keyIdx) => {{
+                    if (keyIdx < validIntervals.length) {{
+                        const interval = validIntervals[keyIdx];
+                        const keyStr = String(key);
+                        if (modelData[keyStr] !== undefined) {{
+                            mapping[interval] = modelData[keyStr];
+                        }}
+                    }}
+                }});
+                
+                return mapping;
+            }}
+            
             // Generar tabla de resultados
             function generateTemporalResultsTable() {{
+                const tableDiv = document.getElementById('temporal-results-table');
+                if (!tableDiv) return;
+                
                 if (!temporalData || !temporalData.results_by_model) {{
+                    tableDiv.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
                     return;
                 }}
                 
                 const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
+                const validIntervals = intervals.filter(i => i > 0);
                 const models = Object.keys(temporalData.results_by_model);
+                const modelNames = {{
+                    'sparse': 'Representaciones Dispersas',
+                    'hierarchical': 'Fusión Jerárquica',
+                    'hybrid': 'Modelo Híbrido'
+                }};
                 
-                let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">';
+                let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
                 tableHTML += '<thead><tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">';
                 tableHTML += '<th style="padding: 12px; text-align: left;">Intervalo</th>';
                 models.forEach(model => {{
-                    tableHTML += `<th style="padding: 12px; text-align: center;">${{model.toUpperCase()}}</th>`;
+                    tableHTML += `<th style="padding: 12px; text-align: center;">${{modelNames[model] || model.toUpperCase()}}</th>`;
                 }});
                 tableHTML += '</tr></thead><tbody>';
                 
-                intervals.forEach(interval => {{
-                    tableHTML += `<tr style="border-bottom: 1px solid #e0e0e0;">`;
+                validIntervals.forEach((interval, idx) => {{
+                    const rowStyle = idx % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;';
+                    tableHTML += `<tr style="border-bottom: 1px solid #e0e0e0; ${{rowStyle}}">`;
                     tableHTML += `<td style="padding: 12px;"><strong>${{interval}} min</strong></td>`;
+                    
                     models.forEach(model => {{
-                        const intervalStr = String(interval);
-                        if (temporalData.results_by_model[model] && 
-                            temporalData.results_by_model[model][intervalStr]) {{
-                            const acc = temporalData.results_by_model[model][intervalStr].accuracy * 100;
-                            tableHTML += `<td style="padding: 12px; text-align: center;">${{acc.toFixed(2)}}%</td>`;
-                        }} else {{
+                        const modelData = temporalData.results_by_model[model];
+                        if (!modelData) {{
                             tableHTML += '<td style="padding: 12px; text-align: center;">-</td>';
+                            return;
+                        }}
+                        
+                        // Usar mapeo correcto
+                        const mapping = mapKeysToIntervals(modelData, intervals);
+                        if (mapping[interval] !== undefined) {{
+                            const acc = mapping[interval].accuracy * 100;
+                            const prec = mapping[interval].precision * 100;
+                            const rec = mapping[interval].recall * 100;
+                            const f1 = mapping[interval].f1_score * 100;
+                            
+                            tableHTML += `<td style="padding: 12px; text-align: center;">`;
+                            tableHTML += `<div style="font-weight: bold; color: #667eea;">${{acc.toFixed(2)}}%</div>`;
+                            tableHTML += `<div style="font-size: 0.85em; color: #666; margin-top: 4px;">`;
+                            tableHTML += `P: ${{prec.toFixed(1)}}% | R: ${{rec.toFixed(1)}}% | F1: ${{f1.toFixed(1)}}%`;
+                            tableHTML += `</div></td>`;
+                        }} else {{
+                            tableHTML += '<td style="padding: 12px; text-align: center; color: #999;">-</td>';
                         }}
                     }});
                     tableHTML += '</tr>';
                 }});
                 
                 tableHTML += '</tbody></table>';
-                document.getElementById('temporal-results-table').innerHTML = tableHTML;
+                tableDiv.innerHTML = tableHTML;
             }}
             
             // Generar gráfico de comparación con papers
             function generatePaperComparisonPlot() {{
-                if (document.getElementById('paper-comparison-plot').hasChildNodes()) {{
+                const plotDiv = document.getElementById('paper-comparison-plot');
+                if (!plotDiv) return;
+                if (plotDiv.hasChildNodes()) return;
+                
+                if (!temporalData || !temporalData.results_by_model) {{
+                    plotDiv.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
                     return;
                 }}
                 
-                const intervals = temporalData?.intervals || [5, 10, 15, 20, 25, 30];
-                const models = temporalData?.results_by_model ? Object.keys(temporalData.results_by_model) : ['hierarchical'];
+                const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
+                const validIntervals = intervals.filter(i => i > 0);
+                const models = Object.keys(temporalData.results_by_model);
                 const modelNames = {{
                     'sparse': 'Representaciones Dispersas',
                     'hierarchical': 'Fusión Jerárquica',
@@ -1695,22 +1756,25 @@ python scripts/train_models_temporal.py</pre>
                 
                 const traces = [];
                 
-                // Datos de nuestros modelos
-                if (temporalData && temporalData.results_by_model) {{
-                    models.forEach(modelName => {{
-                        const accuracies = [];
-                        intervals.forEach(interval => {{
-                            const intervalStr = String(interval);
-                            if (temporalData.results_by_model[modelName] && 
-                                temporalData.results_by_model[modelName][intervalStr]) {{
-                                accuracies.push(temporalData.results_by_model[modelName][intervalStr].accuracy * 100);
-                            }} else {{
-                                accuracies.push(null);
-                            }}
-                        }});
-                        
+                // Datos de nuestros modelos (usando mapeo correcto)
+                models.forEach(modelName => {{
+                    const modelData = temporalData.results_by_model[modelName];
+                    if (!modelData) return;
+                    
+                    const mapping = mapKeysToIntervals(modelData, intervals);
+                    const accuracies = [];
+                    const xValues = [];
+                    
+                    validIntervals.forEach(interval => {{
+                        if (mapping[interval] !== undefined) {{
+                            accuracies.push(mapping[interval].accuracy * 100);
+                            xValues.push(interval);
+                        }}
+                    }});
+                    
+                    if (accuracies.length > 0) {{
                         traces.push({{
-                            x: intervals,
+                            x: xValues,
                             y: accuracies,
                             name: modelNames[modelName] || modelName,
                             type: 'scatter',
@@ -1718,13 +1782,15 @@ python scripts/train_models_temporal.py</pre>
                             marker: {{ size: 10, color: colors[modelName] || '#666' }},
                             line: {{ width: 3, color: colors[modelName] || '#666' }}
                         }});
-                    }});
-                }}
+                    }}
+                }});
                 
                 // Datos del paper Sensors 2021
+                const paperIntervals = [5, 10, 15, 20, 25, 30];
+                const paperAccuracies = [94.4, 93.5, 92.7, 94.0, 93.2, 95.3];
                 traces.push({{
-                    x: [5, 10, 15, 20, 25, 30],
-                    y: [94.4, 93.5, 92.7, 94.0, 93.2, 95.3],
+                    x: paperIntervals,
+                    y: paperAccuracies,
                     name: 'Sensors 2021 (Paper)',
                     type: 'scatter',
                     mode: 'lines+markers',
@@ -1732,10 +1798,24 @@ python scripts/train_models_temporal.py</pre>
                     line: {{ width: 3, color: '#999', dash: 'dash' }}
                 }});
                 
+                // Calcular rango Y dinámico
+                let minY = 100;
+                let maxY = 0;
+                traces.forEach(trace => {{
+                    if (trace.y && trace.y.length > 0) {{
+                        const traceMin = Math.min(...trace.y);
+                        const traceMax = Math.max(...trace.y);
+                        minY = Math.min(minY, traceMin);
+                        maxY = Math.max(maxY, traceMax);
+                    }}
+                }});
+                minY = Math.max(0, minY - 5);
+                maxY = Math.min(100, maxY + 5);
+                
                 const layout = {{
                     title: {{ text: 'Comparación con Papers Científicos', font: {{ size: 20, color: '#667eea' }} }},
                     xaxis: {{ title: 'Minutos Antes de SCD', titlefont: {{ size: 14 }} }},
-                    yaxis: {{ title: 'Precisión (%)', titlefont: {{ size: 14 }}, range: [85, 100] }},
+                    yaxis: {{ title: 'Accuracy (%)', titlefont: {{ size: 14 }}, range: [minY, maxY] }},
                     height: 500,
                     margin: {{ l: 60, r: 40, t: 80, b: 60 }},
                     paper_bgcolor: 'white',
@@ -1748,98 +1828,147 @@ python scripts/train_models_temporal.py</pre>
             
             // Generar tabla comparativa con papers
             function generatePapersComparisonTable() {{
+                const tableDiv = document.getElementById('papers-comparison-table');
+                if (!tableDiv) return;
+                
                 if (!temporalData || !temporalData.results_by_model) {{
+                    tableDiv.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
                     return;
                 }}
                 
                 const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
+                const validIntervals = intervals.filter(i => i > 0);
                 const models = Object.keys(temporalData.results_by_model);
+                const modelNames = {{
+                    'sparse': 'Representaciones Dispersas',
+                    'hierarchical': 'Fusión Jerárquica',
+                    'hybrid': 'Modelo Híbrido'
+                }};
                 const paperAccuracies = [94.4, 93.5, 92.7, 94.0, 93.2, 95.3];
                 
-                let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">';
+                let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
                 tableHTML += '<thead><tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">';
                 tableHTML += '<th style="padding: 12px; text-align: left;">Intervalo</th>';
                 models.forEach(model => {{
-                    tableHTML += `<th style="padding: 12px; text-align: center;">${{model.toUpperCase()}}</th>`;
+                    tableHTML += `<th style="padding: 12px; text-align: center;">${{modelNames[model] || model.toUpperCase()}}</th>`;
                 }});
-                tableHTML += '<th style="padding: 12px; text-align: center;">Sensors 2021</th>';
+                tableHTML += '<th style="padding: 12px; text-align: center; background: rgba(255,255,255,0.2);">Sensors 2021 (Paper)</th>';
                 tableHTML += '</tr></thead><tbody>';
                 
-                intervals.forEach((interval, idx) => {{
-                    tableHTML += `<tr style="border-bottom: 1px solid #e0e0e0;">`;
+                validIntervals.forEach((interval, idx) => {{
+                    const rowStyle = idx % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;';
+                    tableHTML += `<tr style="border-bottom: 1px solid #e0e0e0; ${{rowStyle}}">`;
                     tableHTML += `<td style="padding: 12px;"><strong>${{interval}} min</strong></td>`;
+                    
                     models.forEach(model => {{
-                        const intervalStr = String(interval);
-                        if (temporalData.results_by_model[model] && 
-                            temporalData.results_by_model[model][intervalStr]) {{
-                            const acc = temporalData.results_by_model[model][intervalStr].accuracy * 100;
-                            tableHTML += `<td style="padding: 12px; text-align: center;">${{acc.toFixed(2)}}%</td>`;
-                        }} else {{
+                        const modelData = temporalData.results_by_model[model];
+                        if (!modelData) {{
                             tableHTML += '<td style="padding: 12px; text-align: center;">-</td>';
+                            return;
+                        }}
+                        
+                        const mapping = mapKeysToIntervals(modelData, intervals);
+                        if (mapping[interval] !== undefined) {{
+                            const acc = mapping[interval].accuracy * 100;
+                            const paperAcc = paperAccuracies[idx] || paperAccuracies[paperAccuracies.length - 1];
+                            const diff = acc - paperAcc;
+                            const diffColor = diff >= 0 ? '#11998e' : '#f5576c';
+                            const diffSymbol = diff >= 0 ? '+' : '';
+                            
+                            tableHTML += `<td style="padding: 12px; text-align: center;">`;
+                            tableHTML += `<div style="font-weight: bold;">${{acc.toFixed(2)}}%</div>`;
+                            tableHTML += `<div style="font-size: 0.85em; color: ${{diffColor}};">`;
+                            tableHTML += `${{diffSymbol}}${{diff.toFixed(2)}}% vs paper`;
+                            tableHTML += `</div></td>`;
+                        }} else {{
+                            tableHTML += '<td style="padding: 12px; text-align: center; color: #999;">-</td>';
                         }}
                     }});
-                    tableHTML += `<td style="padding: 12px; text-align: center; color: #999;">${{paperAccuracies[idx]}}%</td>`;
+                    
+                    const paperAcc = paperAccuracies[idx] || paperAccuracies[paperAccuracies.length - 1];
+                    tableHTML += `<td style="padding: 12px; text-align: center; color: #999; font-weight: bold;">${{paperAcc}}%</td>`;
                     tableHTML += '</tr>';
                 }});
                 
                 tableHTML += '</tbody></table>';
-                document.getElementById('papers-comparison-table').innerHTML = tableHTML;
+                tableDiv.innerHTML = tableHTML;
             }}
             
             // Generar heatmap temporal
             function generateTemporalHeatmap() {{
-                if (document.getElementById('temporal-heatmap-plot').hasChildNodes()) {{
-                    return;
-                }}
+                const plotDiv = document.getElementById('temporal-heatmap-plot');
+                if (!plotDiv) return;
+                if (plotDiv.hasChildNodes()) return;
                 
                 if (!temporalData || !temporalData.results_by_model) {{
-                    document.getElementById('temporal-heatmap-plot').innerHTML = 
-                        '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
+                    plotDiv.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
                     return;
                 }}
                 
                 const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
+                const validIntervals = intervals.filter(i => i > 0);
                 const models = Object.keys(temporalData.results_by_model);
-                const modelNames = ['Representaciones Dispersas', 'Fusión Jerárquica', 'Modelo Híbrido'];
-                const metrics = ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'AUC-ROC'];
+                const modelNames = {{
+                    'sparse': 'Representaciones Dispersas',
+                    'hierarchical': 'Fusión Jerárquica',
+                    'hybrid': 'Modelo Híbrido'
+                }};
                 
-                // Preparar datos para heatmap (usando accuracy como ejemplo)
+                // Preparar datos para heatmap usando mapeo correcto
                 const z = [];
                 const y_labels = [];
                 
-                models.forEach((model, modelIdx) => {{
+                models.forEach(model => {{
+                    const modelData = temporalData.results_by_model[model];
+                    if (!modelData) return;
+                    
+                    const mapping = mapKeysToIntervals(modelData, intervals);
                     const row = [];
-                    intervals.forEach(interval => {{
-                        const intervalStr = String(interval);
-                        if (temporalData.results_by_model[model] && 
-                            temporalData.results_by_model[model][intervalStr]) {{
-                            row.push(temporalData.results_by_model[model][intervalStr].accuracy * 100);
+                    
+                    validIntervals.forEach(interval => {{
+                        if (mapping[interval] !== undefined) {{
+                            row.push(mapping[interval].accuracy * 100);
                         }} else {{
                             row.push(null);
                         }}
                     }});
-                    z.push(row);
-                    y_labels.push(modelNames[modelIdx] || model);
+                    
+                    if (row.length > 0) {{
+                        z.push(row);
+                        y_labels.push(modelNames[model] || model);
+                    }}
                 }});
+                
+                if (z.length === 0) {{
+                    plotDiv.innerHTML = '<p style="color: #999; padding: 20px;">No hay datos suficientes para generar el heatmap</p>';
+                    return;
+                }}
                 
                 const trace = {{
                     z: z,
-                    x: intervals,
+                    x: validIntervals,
                     y: y_labels,
                     type: 'heatmap',
                     colorscale: [[0, '#f5576c'], [0.5, '#667eea'], [1, '#11998e']],
                     colorbar: {{
-                        title: 'Precisión (%)',
+                        title: 'Accuracy (%)',
                         titleside: 'right'
-                    }}
+                    }},
+                    text: z.map(row => row.map(val => val !== null ? val.toFixed(1) + '%' : '')),
+                    texttemplate: '%{{text}}',
+                    textfont: {{ size: 12, color: 'white' }},
+                    hovertext: z.map((row, i) => row.map((val, j) => 
+                        val !== null ? `${{y_labels[i]}}<br>${{validIntervals[j]}} min: ${{val.toFixed(2)}}%` : ''
+                    )),
+                    hoverinfo: 'text'
                 }};
                 
                 const layout = {{
-                    title: {{ text: 'Heatmap: Precisión por Modelo e Intervalo Temporal', font: {{ size: 20, color: '#667eea' }} }},
+                    title: {{ text: 'Heatmap: Accuracy por Modelo e Intervalo Temporal', font: {{ size: 20, color: '#667eea' }} }},
                     xaxis: {{ title: 'Minutos Antes de SCD', titlefont: {{ size: 14 }} }},
                     yaxis: {{ title: 'Modelo', titlefont: {{ size: 14 }} }},
                     height: 400,
-                    margin: {{ l: 150, r: 40, t: 80, b: 60 }},
+                    margin: {{ l: 200, r: 40, t: 80, b: 60 }},
                     paper_bgcolor: 'white',
                     plot_bgcolor: 'white'
                 }};
@@ -1849,35 +1978,43 @@ python scripts/train_models_temporal.py</pre>
             
             // Generar análisis estadístico detallado
             function generateTemporalStatisticalAnalysis() {{
+                const analysisDiv = document.getElementById('temporal-statistical-analysis');
+                if (!analysisDiv) return;
+                
                 if (!temporalData || !temporalData.results_by_model) {{
-                    document.getElementById('temporal-statistical-analysis').innerHTML = 
-                        '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
+                    analysisDiv.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
                     return;
                 }}
                 
                 const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
+                const validIntervals = intervals.filter(i => i > 0);
                 const models = Object.keys(temporalData.results_by_model);
+                const modelNames = {{
+                    'sparse': 'Representaciones Dispersas',
+                    'hierarchical': 'Fusión Jerárquica',
+                    'hybrid': 'Modelo Híbrido'
+                }};
                 
                 let analysisHTML = '<div style="margin-top: 20px;">';
                 analysisHTML += '<h4>📊 Estadísticas por Modelo</h4>';
+                analysisHTML += '<p style="color: #666; margin-bottom: 20px;">Estadísticas descriptivas calculadas sobre todos los intervalos temporales analizados.</p>';
                 
-                models.forEach(model => {{
+                models.forEach((model, modelIdx) => {{
+                    const modelData = temporalData.results_by_model[model];
+                    if (!modelData) return;
+                    
+                    const mapping = mapKeysToIntervals(modelData, intervals);
                     const accuracies = [];
                     const precisions = [];
                     const recalls = [];
                     const f1s = [];
-                    const aucs = [];
                     
-                    intervals.forEach(interval => {{
-                        const intervalStr = String(interval);
-                        if (temporalData.results_by_model[model] && 
-                            temporalData.results_by_model[model][intervalStr]) {{
-                            const result = temporalData.results_by_model[model][intervalStr];
-                            accuracies.push(result.accuracy * 100);
-                            precisions.push(result.precision * 100);
-                            recalls.push(result.recall * 100);
-                            f1s.push(result.f1_score * 100);
-                            aucs.push(result.auc_roc * 100);
+                    validIntervals.forEach(interval => {{
+                        if (mapping[interval] !== undefined) {{
+                            accuracies.push(mapping[interval].accuracy * 100);
+                            precisions.push(mapping[interval].precision * 100);
+                            recalls.push(mapping[interval].recall * 100);
+                            f1s.push(mapping[interval].f1_score * 100);
                         }}
                     }});
                     
@@ -1886,31 +2023,73 @@ python scripts/train_models_temporal.py</pre>
                         const stdAcc = Math.sqrt(accuracies.reduce((sq, n) => sq + Math.pow(n - avgAcc, 2), 0) / accuracies.length);
                         const minAcc = Math.min(...accuracies);
                         const maxAcc = Math.max(...accuracies);
+                        const avgPrec = precisions.reduce((a, b) => a + b, 0) / precisions.length;
+                        const avgRec = recalls.reduce((a, b) => a + b, 0) / recalls.length;
+                        const avgF1 = f1s.reduce((a, b) => a + b, 0) / f1s.length;
                         
-                        analysisHTML += `<div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">`;
-                        analysisHTML += `<h5 style="color: #667eea; margin-bottom: 15px;">${{model.toUpperCase()}}</h5>`;
-                        analysisHTML += `<table style="width: 100%; border-collapse: collapse;">`;
-                        analysisHTML += `<tr><td style="padding: 8px;"><strong>Precisión Promedio:</strong></td><td style="padding: 8px;">${{avgAcc.toFixed(2)}}%</td></tr>`;
-                        analysisHTML += `<tr><td style="padding: 8px;"><strong>Desviación Estándar:</strong></td><td style="padding: 8px;">${{stdAcc.toFixed(2)}}%</td></tr>`;
-                        analysisHTML += `<tr><td style="padding: 8px;"><strong>Mínimo:</strong></td><td style="padding: 8px;">${{minAcc.toFixed(2)}}%</td></tr>`;
-                        analysisHTML += `<tr><td style="padding: 8px;"><strong>Máximo:</strong></td><td style="padding: 8px;">${{maxAcc.toFixed(2)}}%</td></tr>`;
-                        analysisHTML += `<tr><td style="padding: 8px;"><strong>Rango:</strong></td><td style="padding: 8px;">${{(maxAcc - minAcc).toFixed(2)}}%</td></tr>`;
-                        analysisHTML += `</table></div>`;
+                        const cardColors = ['#11998e', '#667eea', '#f5576c'];
+                        const cardColor = cardColors[modelIdx % cardColors.length];
+                        
+                        analysisHTML += `<div style="background: linear-gradient(135deg, ${{cardColor}}15 0%, ${{cardColor}}05 100%); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid ${{cardColor}};">`;
+                        analysisHTML += `<h5 style="color: ${{cardColor}}; margin-bottom: 15px; margin-top: 0;">${{modelNames[model] || model.toUpperCase()}}</h5>`;
+                        analysisHTML += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">`;
+                        
+                        // Accuracy
+                        analysisHTML += `<div style="background: white; padding: 15px; border-radius: 6px;">`;
+                        analysisHTML += `<div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">Accuracy</div>`;
+                        analysisHTML += `<div style="font-size: 1.5em; font-weight: bold; color: ${{cardColor}};">${{avgAcc.toFixed(2)}}%</div>`;
+                        analysisHTML += `<div style="font-size: 0.8em; color: #999; margin-top: 5px;">±${{stdAcc.toFixed(2)}}%</div>`;
+                        analysisHTML += `</div>`;
+                        
+                        // Precision
+                        analysisHTML += `<div style="background: white; padding: 15px; border-radius: 6px;">`;
+                        analysisHTML += `<div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">Precision</div>`;
+                        analysisHTML += `<div style="font-size: 1.5em; font-weight: bold; color: ${{cardColor}};">${{avgPrec.toFixed(2)}}%</div>`;
+                        analysisHTML += `</div>`;
+                        
+                        // Recall
+                        analysisHTML += `<div style="background: white; padding: 15px; border-radius: 6px;">`;
+                        analysisHTML += `<div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">Recall</div>`;
+                        analysisHTML += `<div style="font-size: 1.5em; font-weight: bold; color: ${{cardColor}};">${{avgRec.toFixed(2)}}%</div>`;
+                        analysisHTML += `</div>`;
+                        
+                        // F1-Score
+                        analysisHTML += `<div style="background: white; padding: 15px; border-radius: 6px;">`;
+                        analysisHTML += `<div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">F1-Score</div>`;
+                        analysisHTML += `<div style="font-size: 1.5em; font-weight: bold; color: ${{cardColor}};">${{avgF1.toFixed(2)}}%</div>`;
+                        analysisHTML += `</div>`;
+                        
+                        analysisHTML += `</div>`;
+                        
+                        // Rango
+                        analysisHTML += `<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">`;
+                        analysisHTML += `<div style="display: flex; justify-content: space-between; font-size: 0.9em;">`;
+                        analysisHTML += `<span><strong>Mínimo:</strong> ${{minAcc.toFixed(2)}}%</span>`;
+                        analysisHTML += `<span><strong>Máximo:</strong> ${{maxAcc.toFixed(2)}}%</span>`;
+                        analysisHTML += `<span><strong>Rango:</strong> ${{(maxAcc - minAcc).toFixed(2)}}%</span>`;
+                        analysisHTML += `</div></div>`;
+                        analysisHTML += `</div>`;
                     }}
                 }});
                 
-                analysisHTML += '<h4 style="margin-top: 30px;">📈 Análisis de Tendencias</h4>';
-                analysisHTML += '<p>Los modelos muestran variaciones en la precisión según la distancia temporal al evento SCD. ';
-                analysisHTML += 'En general, la precisión se mantiene estable a través de los diferentes intervalos, ';
-                analysisHTML += 'lo que indica robustez temporal de los modelos.</p>';
+                analysisHTML += '<div style="margin-top: 30px; padding: 20px; background: #e8f4f8; border-radius: 8px; border-left: 4px solid #667eea;">';
+                analysisHTML += '<h4 style="margin-top: 0; color: #667eea;">📈 Análisis de Tendencias</h4>';
+                analysisHTML += '<p style="margin-bottom: 10px;">Los modelos muestran variaciones en el rendimiento según la distancia temporal al evento SCD. ';
+                analysisHTML += 'El análisis temporal permite identificar:</p>';
+                analysisHTML += '<ul style="line-height: 2;">';
+                analysisHTML += '<li><strong>Robustez temporal:</strong> Modelos con menor variación entre intervalos son más confiables</li>';
+                analysisHTML += '<li><strong>Ventanas óptimas:</strong> Intervalos donde los modelos tienen mejor rendimiento</li>';
+                analysisHTML += '<li><strong>Consistencia:</strong> Modelos que mantienen rendimiento estable son preferibles para aplicaciones clínicas</li>';
+                analysisHTML += '</ul></div>';
                 analysisHTML += '</div>';
                 
-                document.getElementById('temporal-statistical-analysis').innerHTML = analysisHTML;
+                analysisDiv.innerHTML = analysisHTML;
             }}
             
             // Activar generación de gráficos cuando se abren las pestañas
             document.addEventListener('DOMContentLoaded', function() {{
                 const temporalOverviewTab = document.querySelector('[data-tab="temporal-overview"]');
+                const temporalTableTab = document.querySelector('[data-tab="temporal-table"]');
                 const temporalComparisonTab = document.querySelector('[data-tab="temporal-comparison"]');
                 const temporalVisualizationTab = document.querySelector('[data-tab="temporal-visualization"]');
                 const temporalAnalysisTab = document.querySelector('[data-tab="temporal-analysis"]');
@@ -1918,6 +2097,11 @@ python scripts/train_models_temporal.py</pre>
                 if (temporalOverviewTab && temporalOverviewTab.classList.contains('active')) {{
                     setTimeout(() => {{
                         generateAccuracyVsTimePlot();
+                    }}, 500);
+                }}
+                
+                if (temporalTableTab && temporalTableTab.classList.contains('active')) {{
+                    setTimeout(() => {{
                         generateTemporalResultsTable();
                     }}, 500);
                 }}
@@ -1949,6 +2133,9 @@ python scripts/train_models_temporal.py</pre>
                     if (tabName === 'temporal-overview') {{
                         setTimeout(() => {{
                             generateAccuracyVsTimePlot();
+                        }}, 200);
+                    }} else if (tabName === 'temporal-table') {{
+                        setTimeout(() => {{
                             generateTemporalResultsTable();
                         }}, 200);
                     }} else if (tabName === 'temporal-comparison') {{
