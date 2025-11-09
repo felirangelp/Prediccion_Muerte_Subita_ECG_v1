@@ -88,9 +88,25 @@ n_nonzero_coefs: [3, 5, 7]
 
 ---
 
-### **FASE 2: Análisis Profundo (Prioridad Media)**
+### **FASE 2: Mejora de Preprocesamiento (Prioridad Media-Alta)**
 
-#### 2.1 Análisis de Características
+#### 2.1 Implementación de Pan-Tompkins Completo
+**Objetivo:** Mejorar detección de características ECG y visualización
+
+**Acciones:**
+- [ ] Implementar algoritmo Pan-Tompkins completo con filtros FIR
+- [ ] Visualización paso a paso del algoritmo
+- [ ] Detección de ondas P, Q, S, T
+- [ ] Cálculo completo de tacograma y frecuencia cardíaca global
+- [ ] Integración con dashboard existente
+
+**Documentación:** Ver `docs/PLAN_PAN_TOMPKINS.md` para plan detallado
+
+**Tiempo estimado:** 2-3 semanas (implementación completa)
+
+---
+
+#### 2.2 Análisis de Características
 **Objetivo:** Entender qué características son más importantes
 
 **Acciones:**
@@ -103,7 +119,7 @@ n_nonzero_coefs: [3, 5, 7]
 
 ---
 
-#### 2.2 Análisis de Errores
+#### 2.3 Análisis de Errores
 **Objetivo:** Entender dónde fallan los modelos
 
 **Acciones:**
@@ -116,7 +132,7 @@ n_nonzero_coefs: [3, 5, 7]
 
 ---
 
-#### 2.3 Comparación con Métodos Baseline
+#### 2.4 Comparación con Métodos Baseline
 **Objetivo:** Contextualizar los resultados
 
 **Acciones:**
@@ -285,6 +301,7 @@ n_nonzero_coefs: [3, 5, 7]
 
 - `docs/ENTRENAMIENTO_MODELOS.md` - Documentación técnica completa
 - `docs/PROXIMOS_PASOS.md` - Pasos básicos de ejecución
+- `docs/PLAN_PAN_TOMPKINS.md` - Plan detallado de implementación Pan-Tompkins
 - `results/dashboard_scd_prediction.html` - Dashboard interactivo
 - `results/comprehensive_report.md` - Reporte de análisis actual
 

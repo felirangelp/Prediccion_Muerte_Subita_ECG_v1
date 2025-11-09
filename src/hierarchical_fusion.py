@@ -33,7 +33,10 @@ except:
 
 def detect_r_peaks_advanced(ecg_signal: np.ndarray, fs: float) -> np.ndarray:
     """
-    Detección avanzada de picos R usando Pan-Tompkins mejorado
+    Detección avanzada de picos R usando Pan-Tompkins completo con filtros FIR
+    
+    Esta función ahora usa la implementación completa de Pan-Tompkins
+    que incluye diferenciación e integración usando filtros FIR.
     
     Args:
         ecg_signal: Señal ECG (1D)
@@ -42,27 +45,39 @@ def detect_r_peaks_advanced(ecg_signal: np.ndarray, fs: float) -> np.ndarray:
     Returns:
         Índices de picos R
     """
-    # Derivada para enfatizar picos R
-    derivative = np.diff(ecg_signal)
-    
-    # Cuadrado
-    squared = derivative ** 2
-    
-    # Integración con ventana móvil
-    window_size = int(0.15 * fs)
-    if window_size % 2 == 0:
-        window_size += 1
-    
-    integrated = signal.savgol_filter(squared, window_size, 3)
-    
-    # Detectar picos
-    peaks, _ = signal.find_peaks(
-        integrated,
-        height=np.max(integrated) * 0.5,
-        distance=int(0.2 * fs)  # Mínimo 200ms entre picos
-    )
-    
-    return peaks + 1
+    try:
+        from src.pan_tompkins_complete import pan_tompkins_complete
+        
+        # Usar implementación completa de Pan-Tompkins
+        result = pan_tompkins_complete(ecg_signal, fs, visualize=False)
+        return result['r_peaks']
+        
+    except ImportError:
+        # Fallback a implementación básica si no está disponible
+        warnings.warn("No se pudo importar pan_tompkins_complete. "
+                     "Usando implementación básica.")
+        
+        # Derivada para enfatizar picos R
+        derivative = np.diff(ecg_signal)
+        
+        # Cuadrado
+        squared = derivative ** 2
+        
+        # Integración con ventana móvil
+        window_size = int(0.15 * fs)
+        if window_size % 2 == 0:
+            window_size += 1
+        
+        integrated = signal.savgol_filter(squared, window_size, 3)
+        
+        # Detectar picos
+        peaks, _ = signal.find_peaks(
+            integrated,
+            height=np.max(integrated) * 0.5,
+            distance=int(0.2 * fs)  # Mínimo 200ms entre picos
+        )
+        
+        return peaks + 1
 
 def extract_linear_features(ecg_signal: np.ndarray, fs: float) -> Dict[str, float]:
     """

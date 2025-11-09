@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pickle
+import pandas as pd
 from pathlib import Path
 
 
@@ -180,6 +181,112 @@ class PapersComparisonResults:
             return pickle.load(f)
 
 
+@dataclass
+class CrossValidationResults:
+    """Resultados de validación cruzada con intervalos de confianza"""
+    model_name: str
+    cv_folds: int
+    scores_per_fold: Dict[str, List[float]]  # {'accuracy': [0.94, 0.95, ...], ...}
+    mean_scores: Dict[str, float]  # {'accuracy': 0.942, ...}
+    std_scores: Dict[str, float]  # {'accuracy': 0.012, ...}
+    ci_95: Dict[str, Tuple[float, float]]  # {'accuracy': (0.935, 0.949), ...}
+    
+    def save(self, filepath: str):
+        """Guardar resultados en archivo pickle"""
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filepath: str):
+        """Cargar resultados desde archivo pickle"""
+        with open(filepath, 'rb') as f:
+            return pickle.load(f)
+
+
+@dataclass
+class HyperparameterSearchResults:
+    """Resultados de búsqueda de hiperparámetros"""
+    model_name: str
+    best_params: Dict[str, any]
+    best_score: float
+    search_results: List[Dict]  # Lista de todas las combinaciones probadas
+    param_grid: Dict[str, List]  # Grid de parámetros probados
+    
+    def save(self, filepath: str):
+        """Guardar resultados en archivo pickle"""
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filepath: str):
+        """Cargar resultados desde archivo pickle"""
+        with open(filepath, 'rb') as f:
+            return pickle.load(f)
+
+
+@dataclass
+class FeatureImportanceResults:
+    """Resultados de análisis de importancia de características"""
+    model_name: str
+    feature_names: List[str]
+    importance_scores: np.ndarray
+    top_features: List[Tuple[str, float]]  # Lista de (nombre, score) ordenada
+    permutation_importance: Optional[np.ndarray] = None
+    
+    def save(self, filepath: str):
+        """Guardar resultados en archivo pickle"""
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filepath: str):
+        """Cargar resultados desde archivo pickle"""
+        with open(filepath, 'rb') as f:
+            return pickle.load(f)
+
+
+@dataclass
+class ErrorAnalysisResults:
+    """Resultados de análisis de errores"""
+    model_name: str
+    false_positives: List[int]  # Índices de muestras
+    false_negatives: List[int]  # Índices de muestras
+    error_patterns: Dict[str, any]  # Patrones identificados
+    confusion_matrix: np.ndarray
+    error_samples_metadata: List[Dict] = field(default_factory=list)  # Metadata de muestras con error
+    
+    def save(self, filepath: str):
+        """Guardar resultados en archivo pickle"""
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filepath: str):
+        """Cargar resultados desde archivo pickle"""
+        with open(filepath, 'rb') as f:
+            return pickle.load(f)
+
+
+@dataclass
+class BaselineComparisonResults:
+    """Resultados de comparación con métodos baseline"""
+    baseline_results: Dict[str, Dict[str, float]]  # {'svm': {'accuracy': 0.85, ...}, ...}
+    comparison_table: Optional[pd.DataFrame] = None
+    statistical_tests: Dict[str, Dict[str, float]] = field(default_factory=dict)  # Tests de significancia
+    
+    def save(self, filepath: str):
+        """Guardar resultados en archivo pickle"""
+        import pandas as pd
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filepath: str):
+        """Cargar resultados desde archivo pickle"""
+        with open(filepath, 'rb') as f:
+            return pickle.load(f)
+
+
 def check_data_availability(results_dir: str = "results") -> Dict[str, bool]:
     """
     Verificar qué datos están disponibles para el dashboard
@@ -194,6 +301,11 @@ def check_data_availability(results_dir: str = "results") -> Dict[str, bool]:
         'inter_patient_results': (results_path / 'inter_patient_results.pkl').exists(),
         'papers_comparison': (results_path / 'papers_comparison_results.pkl').exists() or (results_path / 'papers_comparison.pkl').exists(),
         'evaluation_results': (results_path / 'evaluation_results.pkl').exists(),
+        'cross_validation_results': (results_path / 'cross_validation_results.pkl').exists(),
+        'hyperparameter_search_results': (results_path / 'hyperparameter_search_results.pkl').exists(),
+        'feature_importance_results': (results_path / 'feature_importance_results.pkl').exists(),
+        'error_analysis_results': (results_path / 'error_analysis_results.pkl').exists(),
+        'baseline_comparison_results': (results_path / 'baseline_comparison_results.pkl').exists(),
     }
     return availability
 

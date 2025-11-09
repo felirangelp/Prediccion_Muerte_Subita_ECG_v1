@@ -6,13 +6,11 @@
     "python.formatting.provider": "black",
     "python.testing.pytestEnabled": true,
     "files.exclude": {
-        "**/datasets/**": true,
         "**/venv/**": true,
         "**/__pycache__/**": true,
         "**/physionet.org/**": true
     },
     "search.exclude": {
-        "**/datasets/**": true,
         "**/venv/**": true,
         "**/physionet.org/**": true
     },
@@ -22,6 +20,6 @@
     "python.analysis.autoImportCompletions": true,
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+        "source.organizeImports": "explicit"
     }
 }

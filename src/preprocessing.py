@@ -62,7 +62,10 @@ def preprocess_ecg_signal(ecg_signal: np.ndarray, fs: float,
 def detect_r_peaks(ecg_signal: np.ndarray, fs: float, 
                    channel: int = 0, threshold: float = 0.6) -> np.ndarray:
     """
-    Detectar picos R en señal ECG usando algoritmo de Pan-Tompkins
+    Detectar picos R en señal ECG usando algoritmo de Pan-Tompkins (versión básica)
+    
+    Nota: Esta función mantiene compatibilidad con código existente.
+    Para implementación completa con filtros FIR, usar detect_r_peaks_pan_tompkins().
     
     Args:
         ecg_signal: Señal ECG (muestras x canales)
@@ -94,6 +97,42 @@ def detect_r_peaks(ecg_signal: np.ndarray, fs: float,
                                  distance=int(0.2 * fs))  # Mínimo 200ms entre picos
     
     return peaks + 1  # +1 por la derivada
+
+def detect_r_peaks_pan_tompkins(ecg_signal: np.ndarray, fs: float,
+                                channel: int = 0, visualize: bool = False) -> np.ndarray:
+    """
+    Detectar picos R usando implementación completa de Pan-Tompkins con filtros FIR
+    
+    Esta función usa la implementación completa del algoritmo Pan-Tompkins
+    que incluye diferenciación e integración usando filtros FIR.
+    
+    Args:
+        ecg_signal: Señal ECG (muestras x canales)
+        fs: Frecuencia de muestreo
+        channel: Canal a usar para detección
+        visualize: Si retornar señales intermedias (no usado aquí, solo para compatibilidad)
+    
+    Returns:
+        Array con índices de los picos R detectados
+    """
+    try:
+        from src.pan_tompkins_complete import pan_tompkins_complete
+        
+        # Extraer canal
+        if ecg_signal.ndim > 1:
+            signal_channel = ecg_signal[:, channel]
+        else:
+            signal_channel = ecg_signal
+        
+        # Aplicar Pan-Tompkins completo
+        result = pan_tompkins_complete(signal_channel, fs, visualize=False)
+        
+        return result['r_peaks']
+        
+    except ImportError:
+        warnings.warn("No se pudo importar pan_tompkins_complete. "
+                     "Usando implementación básica.")
+        return detect_r_peaks(ecg_signal, fs, channel)
 
 def calculate_hrv_features(r_peaks: np.ndarray, fs: float) -> dict:
     """
