@@ -1549,6 +1549,7 @@ python scripts/train_models_temporal.py</pre>
                     return;
                 }}
                 
+                // Usar intervalos de los datos si están disponibles, sino usar valores por defecto
                 const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
                 const models = Object.keys(temporalData.results_by_model);
                 const modelNames = {{
@@ -1560,32 +1561,85 @@ python scripts/train_models_temporal.py</pre>
                 
                 const traces = [];
                 models.forEach(modelName => {{
-                    const accuracies = [];
-                    intervals.forEach(interval => {{
-                        const intervalStr = String(interval);
-                        if (temporalData.results_by_model[modelName] && 
-                            temporalData.results_by_model[modelName][intervalStr]) {{
-                            accuracies.push(temporalData.results_by_model[modelName][intervalStr].accuracy * 100);
+                    const modelData = temporalData.results_by_model[modelName];
+                    if (!modelData) return;
+                    
+                    // Obtener todas las claves disponibles (pueden ser enteros o strings)
+                    const availableKeys = Object.keys(modelData).map(k => {{
+                        const numKey = parseInt(k);
+                        return isNaN(numKey) ? k : numKey;
+                    }}).sort((a, b) => a - b);
+                    
+                    // Mapear intervalos a claves disponibles
+                    // Las claves pueden ser índices [1,2,3,4,5] que corresponden a intervalos [5,10,15,20,25,30]
+                    // O pueden ser los intervalos directamente
+                    const precisions = [];
+                    const xValues = [];
+                    
+                    // Filtrar intervalos que no sean 0 (el intervalo 0 puede no tener datos)
+                    const validIntervals = intervals.filter(i => i > 0);
+                    
+                    validIntervals.forEach((interval, idx) => {{
+                        let found = false;
+                        let precision = null;
+                        
+                        // Estrategia 1: Intentar con el intervalo como clave directa
+                        if (modelData[interval] !== undefined) {{
+                            precision = modelData[interval].precision || modelData[interval].accuracy;
+                            found = true;
+                        }} else if (modelData[String(interval)] !== undefined) {{
+                            precision = modelData[String(interval)].precision || modelData[String(interval)].accuracy;
+                            found = true;
                         }} else {{
-                            accuracies.push(null);
+                            // Estrategia 2: Mapear por índice
+                            // Si las claves son [1,2,3,4,5] y los intervalos son [5,10,15,20,25,30],
+                            // mapear clave[idx] -> intervalo[idx]
+                            if (idx < availableKeys.length) {{
+                                const key = availableKeys[idx];
+                                // Intentar como int y como string
+                                if (modelData[key] !== undefined) {{
+                                    precision = modelData[key].precision || modelData[key].accuracy;
+                                    found = true;
+                                }} else if (modelData[String(key)] !== undefined) {{
+                                    precision = modelData[String(key)].precision || modelData[String(key)].accuracy;
+                                    found = true;
+                                }}
+                            }}
+                        }}
+                        
+                        if (found && precision !== null) {{
+                            precisions.push(precision * 100);
+                            xValues.push(interval);
                         }}
                     }});
                     
-                    traces.push({{
-                        x: intervals,
-                        y: accuracies,
-                        name: modelNames[modelName] || modelName,
-                        type: 'scatter',
-                        mode: 'lines+markers',
-                        marker: {{ size: 10, color: colors[modelName] || '#666' }},
-                        line: {{ width: 2, color: colors[modelName] || '#666' }}
-                    }});
+                    // Solo agregar el trace si hay al menos un valor no nulo
+                    if (precisions.length > 0 && precisions.some(v => v !== null && !isNaN(v))) {{
+                        traces.push({{
+                            x: xValues.length > 0 ? xValues : validIntervals,
+                            y: precisions,
+                            name: modelNames[modelName] || modelName,
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            marker: {{ size: 10, color: colors[modelName] || '#666' }},
+                            line: {{ width: 3, color: colors[modelName] || '#666' }}
+                        }});
+                    }}
                 }});
                 
-                // Añadir datos de papers para comparación
+                // Añadir datos de papers para comparación (usar los mismos intervalos que los datos)
+                const paperIntervals = intervals.length > 0 ? intervals : [5, 10, 15, 20, 25, 30];
+                const paperPrecisions = [94.3, 93.5, 92.8, 93.8, 92.8, 95.0];
+                // Ajustar los valores del paper a los intervalos disponibles
+                const paperValues = paperIntervals.map((interval, idx) => {{
+                    // Mapear a los valores del paper según el índice
+                    const paperIdx = Math.min(idx, paperPrecisions.length - 1);
+                    return paperPrecisions[paperIdx];
+                }});
+                
                 traces.push({{
-                    x: [5, 10, 15, 20, 25, 30],
-                    y: [94.4, 93.5, 92.7, 94.0, 93.2, 95.3],
+                    x: paperIntervals,
+                    y: paperValues,
                     name: 'Sensors 2021 (Paper)',
                     type: 'scatter',
                     mode: 'lines+markers',
