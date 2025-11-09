@@ -1508,8 +1508,8 @@ python scripts/train_models_temporal.py</pre>
             </div>
             
             <div id="temporal-overview" class="tab-content active">
-                <h3>📊 Precisión por Distancia Temporal al Evento SCD</h3>
-                <p>Esta sección analiza cómo varía la precisión de los modelos según la distancia temporal al evento de muerte súbita cardíaca.</p>
+                <h3>📊 Rendimiento por Distancia Temporal al Evento SCD</h3>
+                <p>Esta sección analiza cómo varía el rendimiento (accuracy) de los modelos según la distancia temporal al evento de muerte súbita cardíaca.</p>
                 <div class="plot-container" id="accuracy-vs-time-plot"></div>
                 <h3 style="margin-top: 40px;">📋 Resultados por Intervalo Temporal</h3>
                 <div id="temporal-results-table"></div>
@@ -1622,16 +1622,30 @@ python scripts/train_models_temporal.py</pre>
                             
                             // Obtener los datos usando la clave como string
                             if (modelData[keyStr] !== undefined) {{
-                                const precision = modelData[keyStr].precision || modelData[keyStr].accuracy;
-                                console.log(`[Temporal Plot]       precision=${{precision}}`);
+                                // Priorizar accuracy para mostrar variación temporal
+                                // Si accuracy no está disponible o es inválido, usar precision como fallback
+                                let metricValue = modelData[keyStr].accuracy;
+                                const precision = modelData[keyStr].precision;
+                                const f1Score = modelData[keyStr].f1_score;
                                 
-                                if (precision !== null && precision !== undefined && !isNaN(precision)) {{
-                                    const precisionPercent = precision * 100;
-                                    precisions.push(precisionPercent);
-                                    xValues.push(interval);
-                                    console.log(`[Temporal Plot]       ✅ Agregado: x=${{interval}}, y=${{precisionPercent.toFixed(2)}}%`);
+                                // Si accuracy es null/undefined/NaN, usar precision
+                                if (metricValue === null || metricValue === undefined || isNaN(metricValue)) {{
+                                    metricValue = precision;
+                                    console.log(`[Temporal Plot]       Usando precision (accuracy no disponible)`);
                                 }} else {{
-                                    console.warn(`[Temporal Plot]       ⚠️  Precision inválida: ${{precision}}`);
+                                    // Usar accuracy directamente para mostrar variación temporal
+                                    console.log(`[Temporal Plot]       Usando accuracy para mostrar variación temporal`);
+                                }}
+                                
+                                console.log(`[Temporal Plot]       accuracy=${{modelData[keyStr].accuracy}}, precision=${{precision}}, f1=${{f1Score}}, metricValue=${{metricValue}}`);
+                                
+                                if (metricValue !== null && metricValue !== undefined && !isNaN(metricValue)) {{
+                                    const metricPercent = metricValue * 100;
+                                    precisions.push(metricPercent);
+                                    xValues.push(interval);
+                                    console.log(`[Temporal Plot]       ✅ Agregado: x=${{interval}}, y=${{metricPercent.toFixed(2)}}%`);
+                                }} else {{
+                                    console.warn(`[Temporal Plot]       ⚠️  Métrica inválida: ${{metricValue}}`);
                                 }}
                             }} else {{
                                 console.warn(`[Temporal Plot]       ⚠️  Clave "${{keyStr}}" no encontrada en modelData`);
@@ -1715,9 +1729,9 @@ python scripts/train_models_temporal.py</pre>
                 console.log(`[Temporal Plot] Rango Y calculado: [${{minY.toFixed(2)}}, ${{maxY.toFixed(2)}}]`);
                 
                 const layout = {{
-                    title: {{ text: 'Precisión vs Minutos Antes de SCD', font: {{ size: 20, color: '#667eea' }} }},
+                    title: {{ text: 'Accuracy vs Minutos Antes de SCD', font: {{ size: 20, color: '#667eea' }} }},
                     xaxis: {{ title: 'Minutos Antes de SCD', titlefont: {{ size: 14 }} }},
-                    yaxis: {{ title: 'Precisión (%)', titlefont: {{ size: 14 }}, range: [minY, maxY] }},
+                    yaxis: {{ title: 'Accuracy (%)', titlefont: {{ size: 14 }}, range: [minY, maxY] }},
                     height: 500,
                     margin: {{ l: 60, r: 40, t: 80, b: 60 }},
                     paper_bgcolor: 'white',
