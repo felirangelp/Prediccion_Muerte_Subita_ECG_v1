@@ -3382,12 +3382,102 @@ python scripts/train_models.py --inter-patient</pre>
                     title: 'Top 10 Características Más Importantes',
                     xaxis: {{ title: 'Característica' }},
                     yaxis: {{ title: 'Importancia' }},
-                    barmode: 'group'
+                    barmode: 'group',
+                    height: 500
                 }};
                 
                 Plotly.newPlot('features-top-plot', traces, layout);
             }}
             
+            function generateFeaturesComparisonPlot() {{
+                const plotDiv = document.getElementById('features-comparison-plot');
+                if (!plotDiv) return;
+                if (plotDiv.hasChildNodes()) return; // Ya generado
+                
+                if (!featureData || featureData === null) {{
+                    plotDiv.innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de características disponibles.</p>';
+                    return;
+                }}
+                
+                // Crear gráfico de comparación de importancia promedio por modelo
+                const models = Object.keys(featureData);
+                const avgImportance = models.map(model => {{
+                    const data = featureData[model];
+                    const scores = data.top_features.map(f => f[1]);
+                    return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+                }});
+                
+                const trace = {{
+                    x: models,
+                    y: avgImportance,
+                    type: 'bar',
+                    marker: {{
+                        color: ['#11998e', '#667eea', '#f5576c'],
+                        line: {{ color: 'white', width: 1 }}
+                    }},
+                    text: avgImportance.map(v => v.toFixed(4)),
+                    textposition: 'outside'
+                }};
+                
+                const layout = {{
+                    title: 'Importancia Promedio de Características por Modelo',
+                    xaxis: {{ title: 'Modelo' }},
+                    yaxis: {{ title: 'Importancia Promedio' }},
+                    height: 400
+                }};
+                
+                Plotly.newPlot('features-comparison-plot', [trace], layout);
+            }}
+            
+            function generateFeaturesDetails() {{
+                const detailsDiv = document.getElementById('features-details-content');
+                if (!detailsDiv) return;
+                
+                if (!featureData || featureData === null) {{
+                    detailsDiv.innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de características disponibles.</p>';
+                    return;
+                }}
+                
+                let html = '';
+                for (const [model, data] of Object.entries(featureData)) {{
+                    html += `<div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">`;
+                    html += `<h4 style="color: #667eea; margin-top: 0;">${{model.toUpperCase()}}</h4>`;
+                    html += `<p><strong>Total de características analizadas:</strong> ${{data.top_features.length}}</p>`;
+                    html += `<h5>Top 20 Características:</h5>`;
+                    html += `<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">`;
+                    html += `<thead><tr style="background: #667eea; color: white;"><th style="padding: 8px; text-align: left;">#</th><th style="padding: 8px; text-align: left;">Característica</th><th style="padding: 8px; text-align: right;">Importancia</th></tr></thead><tbody>`;
+                    
+                    data.top_features.slice(0, 20).forEach((feature, idx) => {{
+                        html += `<tr style="border-bottom: 1px solid #ddd;">`;
+                        html += `<td style="padding: 8px;">${{idx + 1}}</td>`;
+                        html += `<td style="padding: 8px;"><code>${{feature[0]}}</code></td>`;
+                        html += `<td style="padding: 8px; text-align: right;">${{feature[1].toFixed(6)}}</td>`;
+                        html += `</tr>`;
+                    }});
+                    
+                    html += `</tbody></table></div>`;
+                }}
+                
+                detailsDiv.innerHTML = html;
+            }}
+            
+            // Event listeners para tabs
+            document.querySelectorAll('[data-tab^="features-"]').forEach(tab => {{
+                tab.addEventListener('click', function() {{
+                    const tabName = this.getAttribute('data-tab');
+                    if (tabName === 'features-top') {{
+                        setTimeout(() => generateFeaturesPlot(), 200);
+                    }} else if (tabName === 'features-comparison') {{
+                        setTimeout(() => generateFeaturesComparisonPlot(), 200);
+                    }} else if (tabName === 'features-details') {{
+                        setTimeout(() => generateFeaturesDetails(), 200);
+                    }}
+                }});
+            }});
+            
+            // Generar al cargar
             setTimeout(() => {{
                 const tab = document.querySelector('[data-tab="features-top"]');
                 if (tab && tab.classList.contains('active')) {{
@@ -3484,7 +3574,121 @@ python scripts/train_models.py --inter-patient</pre>
                 }};
                 
                 Plotly.newPlot('errors-summary-plot', [trace1, trace2], layout);
+                
+                // Generar tabla de resumen
+                let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin: 20px 0;"><thead><tr style="background: #667eea; color: white;">';
+                tableHTML += '<th style="padding: 12px; text-align: left;">Modelo</th>';
+                tableHTML += '<th style="padding: 12px; text-align: right;">Falsos Positivos</th>';
+                tableHTML += '<th style="padding: 12px; text-align: right;">Falsos Negativos</th>';
+                tableHTML += '<th style="padding: 12px; text-align: right;">Tasa de Error</th>';
+                tableHTML += '<th style="padding: 12px; text-align: right;">Tasa FP</th>';
+                tableHTML += '<th style="padding: 12px; text-align: right;">Tasa FN</th></tr></thead><tbody>';
+                
+                for (const [model, data] of Object.entries(errorData)) {{
+                    tableHTML += `<tr style="border-bottom: 1px solid #ddd;">`;
+                    tableHTML += `<td style="padding: 12px;"><strong>${{model}}</strong></td>`;
+                    tableHTML += `<td style="padding: 12px; text-align: right;">${{data.false_positives}}</td>`;
+                    tableHTML += `<td style="padding: 12px; text-align: right;">${{data.false_negatives}}</td>`;
+                    tableHTML += `<td style="padding: 12px; text-align: right;">${{(data.error_rate * 100).toFixed(2)}}%</td>`;
+                    tableHTML += `<td style="padding: 12px; text-align: right;">${{(data.false_positive_rate * 100).toFixed(2)}}%</td>`;
+                    tableHTML += `<td style="padding: 12px; text-align: right;">${{(data.false_negative_rate * 100).toFixed(2)}}%</td>`;
+                    tableHTML += `</tr>`;
+                }}
+                
+                tableHTML += '</tbody></table>';
+                document.getElementById('errors-summary-table').innerHTML = tableHTML;
             }}
+            
+            function generateErrorsPatterns() {{
+                const patternsDiv = document.getElementById('errors-patterns-content');
+                if (!patternsDiv) return;
+                
+                if (!errorData || errorData === null) {{
+                    patternsDiv.innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de errores disponibles.</p>';
+                    return;
+                }}
+                
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">';
+                
+                for (const [model, data] of Object.entries(errorData)) {{
+                    html += `<div style="padding: 20px; background: #f8f9fa; border-radius: 8px;">`;
+                    html += `<h4 style="color: #667eea; margin-top: 0;">${{model.toUpperCase()}}</h4>`;
+                    html += `<p><strong>Total de errores:</strong> ${{data.false_positives + data.false_negatives}}</p>`;
+                    html += `<p><strong>Tasa de error:</strong> ${{(data.error_rate * 100).toFixed(2)}}%</p>`;
+                    html += `<p><strong>Falsos positivos:</strong> ${{data.false_positives}} (${{(data.false_positive_rate * 100).toFixed(2)}}%)</p>`;
+                    html += `<p><strong>Falsos negativos:</strong> ${{data.false_negatives}} (${{(data.false_negative_rate * 100).toFixed(2)}}%)</p>`;
+                    html += `</div>`;
+                }}
+                
+                html += '</div>';
+                patternsDiv.innerHTML = html;
+            }}
+            
+            function generateErrorsComparison() {{
+                const plotDiv = document.getElementById('errors-comparison-plot');
+                if (!plotDiv) return;
+                if (plotDiv.hasChildNodes()) return;
+                
+                if (!errorData || errorData === null) {{
+                    plotDiv.innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de errores disponibles.</p>';
+                    return;
+                }}
+                
+                const models = Object.keys(errorData);
+                const errorRates = models.map(m => errorData[m].error_rate * 100);
+                const fpRates = models.map(m => errorData[m].false_positive_rate * 100);
+                const fnRates = models.map(m => errorData[m].false_negative_rate * 100);
+                
+                const trace1 = {{
+                    x: models,
+                    y: errorRates,
+                    name: 'Tasa de Error Total',
+                    type: 'bar',
+                    marker: {{ color: '#667eea' }}
+                }};
+                
+                const trace2 = {{
+                    x: models,
+                    y: fpRates,
+                    name: 'Tasa Falsos Positivos',
+                    type: 'bar',
+                    marker: {{ color: '#ff6b6b' }}
+                }};
+                
+                const trace3 = {{
+                    x: models,
+                    y: fnRates,
+                    name: 'Tasa Falsos Negativos',
+                    type: 'bar',
+                    marker: {{ color: '#4ecdc4' }}
+                }};
+                
+                const layout = {{
+                    title: 'Comparación de Tasas de Error por Modelo',
+                    xaxis: {{ title: 'Modelo' }},
+                    yaxis: {{ title: 'Tasa (%)' }},
+                    barmode: 'group',
+                    height: 400
+                }};
+                
+                Plotly.newPlot('errors-comparison-plot', [trace1, trace2, trace3], layout);
+            }}
+            
+            // Event listeners para tabs
+            document.querySelectorAll('[data-tab^="errors-"]').forEach(tab => {{
+                tab.addEventListener('click', function() {{
+                    const tabName = this.getAttribute('data-tab');
+                    if (tabName === 'errors-summary') {{
+                        setTimeout(() => generateErrorsPlot(), 200);
+                    }} else if (tabName === 'errors-patterns') {{
+                        setTimeout(() => generateErrorsPatterns(), 200);
+                    }} else if (tabName === 'errors-comparison') {{
+                        setTimeout(() => generateErrorsComparison(), 200);
+                    }}
+                }});
+            }});
             
             setTimeout(() => {{
                 const tab = document.querySelector('[data-tab="errors-summary"]');
@@ -3580,6 +3784,125 @@ python scripts/train_models.py --inter-patient</pre>
                 tableHTML += '</tbody></table>';
                 document.getElementById('baseline-comparison-table').innerHTML = tableHTML;
             }}
+            
+            function generateBaselineChart() {{
+                const chartDiv = document.getElementById('baseline-comparison-chart');
+                if (!chartDiv) return;
+                if (chartDiv.hasChildNodes()) return;
+                
+                if (!baselineData || baselineData === null || !baselineData.comparison_table) {{
+                    chartDiv.innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de comparación disponibles.</p>';
+                    return;
+                }}
+                
+                const table = baselineData.comparison_table;
+                if (table.length === 0) return;
+                
+                const models = table.map(row => row['Modelo']);
+                const accuracies = table.map(row => parseFloat(row['Accuracy']) || 0);
+                const precisions = table.map(row => parseFloat(row['Precision']) || 0);
+                const recalls = table.map(row => parseFloat(row['Recall']) || 0);
+                const f1s = table.map(row => parseFloat(row['F1-Score']) || 0);
+                
+                const trace1 = {{
+                    x: models,
+                    y: accuracies,
+                    name: 'Accuracy',
+                    type: 'bar',
+                    marker: {{ color: '#11998e' }}
+                }};
+                
+                const trace2 = {{
+                    x: models,
+                    y: precisions,
+                    name: 'Precision',
+                    type: 'bar',
+                    marker: {{ color: '#667eea' }}
+                }};
+                
+                const trace3 = {{
+                    x: models,
+                    y: recalls,
+                    name: 'Recall',
+                    type: 'bar',
+                    marker: {{ color: '#f5576c' }}
+                }};
+                
+                const trace4 = {{
+                    x: models,
+                    y: f1s,
+                    name: 'F1-Score',
+                    type: 'bar',
+                    marker: {{ color: '#f6d365' }}
+                }};
+                
+                const layout = {{
+                    title: 'Comparación de Métricas: Modelos Principales vs Baselines',
+                    xaxis: {{ title: 'Modelo', tickangle: -45 }},
+                    yaxis: {{ title: 'Score', range: [0, 1] }},
+                    barmode: 'group',
+                    height: 500
+                }};
+                
+                Plotly.newPlot('baseline-comparison-chart', [trace1, trace2, trace3, trace4], layout);
+            }}
+            
+            function generateBaselineStats() {{
+                const statsDiv = document.getElementById('baseline-stats-content');
+                if (!statsDiv) return;
+                
+                if (!baselineData || baselineData === null) {{
+                    statsDiv.innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de comparación disponibles.</p>';
+                    return;
+                }}
+                
+                let html = '<div style="padding: 20px;">';
+                html += '<h4>Análisis Estadístico</h4>';
+                
+                if (baselineData.baseline_results) {{
+                    html += '<div style="margin-top: 20px;">';
+                    html += '<h5>Resultados de Modelos Baseline:</h5>';
+                    html += '<ul style="line-height: 2;">';
+                    
+                    for (const [name, results] of Object.entries(baselineData.baseline_results)) {{
+                        html += `<li><strong>${{name.toUpperCase()}}:</strong> `;
+                        html += `Accuracy: ${{(results.accuracy * 100).toFixed(2)}}%, `;
+                        html += `Precision: ${{(results.precision * 100).toFixed(2)}}%, `;
+                        html += `Recall: ${{(results.recall * 100).toFixed(2)}}%, `;
+                        html += `F1: ${{(results.f1_score * 100).toFixed(2)}}%, `;
+                        html += `AUC-ROC: ${{(results.auc_roc * 100).toFixed(2)}}%</li>`;
+                    }}
+                    
+                    html += '</ul></div>';
+                }}
+                
+                html += '<div style="margin-top: 20px; padding: 15px; background: #e8f4f8; border-radius: 8px;">';
+                html += '<h5>Observaciones:</h5>';
+                html += '<ul style="line-height: 2;">';
+                html += '<li>Los modelos baseline (SVM, Random Forest) muestran accuracy muy alto, posiblemente debido a características simples muy discriminativas.</li>';
+                html += '<li>Los modelos avanzados (Sparse, Hierarchical) ofrecen mejor interpretabilidad y robustez.</li>';
+                html += '<li>La comparación ayuda a contextualizar el rendimiento de los modelos principales.</li>';
+                html += '</ul></div>';
+                html += '</div>';
+                
+                statsDiv.innerHTML = html;
+            }}
+            
+            // Event listeners para tabs
+            document.querySelectorAll('[data-tab^="baseline-"]').forEach(tab => {{
+                tab.addEventListener('click', function() {{
+                    const tabName = this.getAttribute('data-tab');
+                    if (tabName === 'baseline-table') {{
+                        setTimeout(() => generateBaselineTable(), 200);
+                    }} else if (tabName === 'baseline-chart') {{
+                        setTimeout(() => generateBaselineChart(), 200);
+                    }} else if (tabName === 'baseline-stats') {{
+                        setTimeout(() => generateBaselineStats(), 200);
+                    }}
+                }});
+            }});
             
             setTimeout(() => {{
                 const tab = document.querySelector('[data-tab="baseline-table"]');
