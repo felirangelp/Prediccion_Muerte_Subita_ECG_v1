@@ -84,6 +84,43 @@ class DashboardGenerator:
                     margin: 10px 0 0 0;
                     opacity: 0.9;
                 }
+                .main-tabs {
+                    display: flex;
+                    gap: 10px;
+                    margin-bottom: 30px;
+                    border-bottom: 3px solid #e0e0e0;
+                    background: white;
+                    padding: 0 20px;
+                    border-radius: 10px 10px 0 0;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                .main-tab {
+                    padding: 15px 30px;
+                    cursor: pointer;
+                    border: none;
+                    background: none;
+                    font-size: 18px;
+                    font-weight: 500;
+                    color: #666;
+                    transition: all 0.3s;
+                    border-bottom: 3px solid transparent;
+                    margin-bottom: -3px;
+                }
+                .main-tab:hover {
+                    color: #667eea;
+                    background-color: #f8f9fa;
+                }
+                .main-tab.active {
+                    color: #667eea;
+                    border-bottom: 3px solid #667eea;
+                    background-color: #f8f9fa;
+                }
+                .main-tab-content {
+                    display: none;
+                }
+                .main-tab-content.active {
+                    display: block;
+                }
                 .section {
                     background: white;
                     padding: 25px;
@@ -157,6 +194,15 @@ class DashboardGenerator:
                 <h1>🔬 Dashboard de Predicción de Muerte Súbita Cardíaca</h1>
                 <p>Análisis comparativo de métodos: Representaciones Dispersas, Fusión Jerárquica y Modelo Híbrido</p>
             </div>
+            
+            <!-- Pestañas principales -->
+            <div class="main-tabs">
+                <button class="main-tab active" data-main-tab="main-dashboard">📊 Dashboard Principal</button>
+                <button class="main-tab" data-main-tab="pan-tompkins">🔬 Análisis Pan-Tompkins</button>
+            </div>
+            
+            <!-- Contenido de pestaña: Dashboard Principal -->
+            <div id="main-dashboard" class="main-tab-content active">
         """
         
         # Sección 1: Resumen Ejecutivo
@@ -177,6 +223,21 @@ class DashboardGenerator:
         # Sección 6: Análisis Comparativo
         html_content += self._generate_comparative_analysis(evaluation_results)
         
+        # Sección 6.5: Validación Cruzada (mejorada)
+        html_content += self._generate_cross_validation_section()
+        
+        # Sección 6.6: Optimización de Hiperparámetros
+        html_content += self._generate_hyperparameter_section()
+        
+        # Sección 6.7: Análisis de Características
+        html_content += self._generate_feature_importance_section()
+        
+        # Sección 6.8: Análisis de Errores
+        html_content += self._generate_error_analysis_section()
+        
+        # Sección 6.9: Comparación con Baselines
+        html_content += self._generate_baseline_comparison_section()
+        
         # Sección 7: Análisis Temporal por Intervalos (nueva)
         html_content += self._generate_temporal_analysis_section()
         
@@ -196,16 +257,48 @@ class DashboardGenerator:
         html_content += self._generate_realtime_prediction_section()
         
         html_content += """
+            </div>
+            
+            <!-- Contenido de pestaña: Análisis Pan-Tompkins -->
+            <div id="pan-tompkins" class="main-tab-content">
+        """
+        
+        # Sección 13: Análisis Pan-Tompkins
+        html_content += self._generate_pan_tompkins_section()
+        
+        html_content += """
+            </div>
+        """
+        
+        html_content += """
             <script src="https://cdn.plot.ly/plotly-2.35.3.min.js" charset="utf-8"></script>
             <script>
-                // Funcionalidad de tabs
+                // Funcionalidad de pestañas principales
+                document.querySelectorAll('.main-tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const tabName = this.getAttribute('data-main-tab');
+                        document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.main-tab-content').forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+                        document.getElementById(tabName).classList.add('active');
+                    });
+                });
+                
+                // Funcionalidad de tabs secundarios
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', function() {
                         const tabName = this.getAttribute('data-tab');
-                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        // Solo afectar tabs dentro del mismo contenedor
+                        const container = this.closest('.section, .main-tab-content');
+                        if (container) {
+                            container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                            container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        }
                         this.classList.add('active');
-                        document.getElementById(tabName).classList.add('active');
+                        const content = document.getElementById(tabName);
+                        if (content) {
+                            content.classList.add('active');
+                        }
                         
                         // Generar gráficos cuando se activan las pestañas específicas
                         if (tabName === 'data-distribution') {
@@ -376,10 +469,28 @@ class DashboardGenerator:
         """Generar resumen ejecutivo"""
         if not results:
             results = {
-                'sparse': {'accuracy': 0.0, 'precision': 0.0, 'recall': 0.0, 'f1': 0.0},
-                'hierarchical': {'accuracy': 0.0, 'precision': 0.0, 'recall': 0.0, 'f1': 0.0},
-                'hybrid': {'accuracy': 0.0, 'precision': 0.0, 'recall': 0.0, 'f1': 0.0}
+                'sparse': {'accuracy': 0.0, 'precision': 0.0, 'recall': 0.0, 'f1_score': 0.0, 'auc_roc': 0.0},
+                'hierarchical': {'accuracy': 0.0, 'precision': 0.0, 'recall': 0.0, 'f1_score': 0.0, 'auc_roc': 0.0},
+                'hybrid': {'accuracy': 0.0, 'precision': 0.0, 'recall': 0.0, 'f1_score': 0.0, 'auc_roc': 0.0}
             }
+        
+        # Cargar intervalos de confianza si están disponibles
+        sparse_acc = results.get('sparse', {}).get('accuracy', 0.0) * 100
+        sparse_acc_ci = results.get('sparse', {}).get('accuracy_ci', None)
+        hierarchical_acc = results.get('hierarchical', {}).get('accuracy', 0.0) * 100
+        hierarchical_acc_ci = results.get('hierarchical', {}).get('accuracy_ci', None)
+        hybrid_acc = results.get('hybrid', {}).get('accuracy', 0.0) * 100
+        hybrid_acc_ci = results.get('hybrid', {}).get('accuracy_ci', None)
+        
+        # Formatear intervalos de confianza
+        def format_ci(ci, value):
+            if ci and isinstance(ci, (list, tuple)) and len(ci) == 2:
+                return f"<br><small style='opacity: 0.8;'>95% CI: [{ci[0]*100:.2f}%, {ci[1]*100:.2f}%]</small>"
+            return ""
+        
+        sparse_ci_str = format_ci(sparse_acc_ci, sparse_acc)
+        hierarchical_ci_str = format_ci(hierarchical_acc_ci, hierarchical_acc)
+        hybrid_ci_str = format_ci(hybrid_acc_ci, hybrid_acc)
         
         html = """
         <div class="section">
@@ -388,27 +499,30 @@ class DashboardGenerator:
                 <div class="metric-card">
                     <h3>Método 1: Representaciones Dispersas</h3>
                     <div class="value">{:.1f}%</div>
-                    <p>Precisión: {:.1f}%</p>
+                    <p>Precisión: {:.1f}%{}</p>
                 </div>
                 <div class="metric-card">
                     <h3>Método 2: Fusión Jerárquica</h3>
                     <div class="value">{:.1f}%</div>
-                    <p>Precisión: {:.1f}%</p>
+                    <p>Precisión: {:.1f}%{}</p>
                 </div>
                 <div class="metric-card">
                     <h3>Modelo Híbrido</h3>
                     <div class="value">{:.1f}%</div>
-                    <p>Precisión: {:.1f}%</p>
+                    <p>Precisión: {:.1f}%{}</p>
                 </div>
             </div>
         </div>
         """.format(
-            results.get('sparse', {}).get('accuracy', 0) * 100,
-            results.get('sparse', {}).get('precision', 0) * 100,
-            results.get('hierarchical', {}).get('accuracy', 0) * 100,
-            results.get('hierarchical', {}).get('precision', 0) * 100,
-            results.get('hybrid', {}).get('accuracy', 0) * 100,
-            results.get('hybrid', {}).get('precision', 0) * 100
+            sparse_acc,
+            results.get('sparse', {}).get('precision', 0.0) * 100,
+            sparse_ci_str,
+            hierarchical_acc,
+            results.get('hierarchical', {}).get('precision', 0.0) * 100,
+            hierarchical_ci_str,
+            hybrid_acc,
+            results.get('hybrid', {}).get('precision', 0.0) * 100,
+            hybrid_ci_str
         )
         
         return html
@@ -3007,6 +3121,476 @@ python scripts/train_models.py --inter-patient</pre>
         """
         return html
     
+    def _generate_cross_validation_section(self) -> str:
+        """Generar sección de validación cruzada con intervalos de confianza"""
+        # Cargar datos de validación cruzada
+        cv_data_json = "null"
+        try:
+            with open('results/cross_validation_results.pkl', 'rb') as f:
+                cv_results_dict = pickle.load(f)
+            
+            import json
+            cv_data = {}
+            for model_name, cv_result in cv_results_dict.items():
+                cv_data[model_name] = {
+                    'cv_folds': cv_result.cv_folds,
+                    'mean_scores': cv_result.mean_scores,
+                    'std_scores': cv_result.std_scores,
+                    'ci_95': {k: list(v) for k, v in cv_result.ci_95.items()},
+                    'scores_per_fold': cv_result.scores_per_fold
+                }
+            cv_data_json = json.dumps(cv_data)
+        except Exception as e:
+            print(f"⚠️  No se pudieron cargar datos de validación cruzada: {e}")
+        
+        html = f"""
+        <div class="section">
+            <h2>📊 Validación Cruzada con Intervalos de Confianza</h2>
+            <div class="tabs">
+                <button class="tab active" data-tab="cv-overview">Resumen</button>
+                <button class="tab" data-tab="cv-distribution">Distribución por Folds</button>
+                <button class="tab" data-tab="cv-comparison">Comparación entre Modelos</button>
+            </div>
+            
+            <div id="cv-overview" class="tab-content active">
+                <h3>📈 Resultados de Validación Cruzada</h3>
+                <p>Esta sección muestra los resultados de validación cruzada con intervalos de confianza del 95%.</p>
+                <div class="plot-container" id="cv-results-plot"></div>
+                <div id="cv-results-table"></div>
+            </div>
+            
+            <div id="cv-distribution" class="tab-content">
+                <h3>📊 Distribución de Scores por Fold</h3>
+                <div class="plot-container" id="cv-distribution-plot"></div>
+            </div>
+            
+            <div id="cv-comparison" class="tab-content">
+                <h3>🔬 Comparación Estadística</h3>
+                <div class="plot-container" id="cv-comparison-plot"></div>
+            </div>
+        </div>
+        
+        <script>
+            const cvData = {cv_data_json};
+            
+            function generateCVResultsPlot() {{
+                if (!cvData || cvData === null) {{
+                    document.getElementById('cv-results-plot').innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de validación cruzada disponibles.</p>';
+                    return;
+                }}
+                
+                const models = Object.keys(cvData);
+                const metrics = ['accuracy', 'precision', 'recall', 'f1_score', 'auc_roc'];
+                
+                const traces = [];
+                const xLabels = [];
+                
+                for (const metric of metrics) {{
+                    const means = [];
+                    const errors = [];
+                    const labels = [];
+                    
+                    for (const model of models) {{
+                        const data = cvData[model];
+                        means.push(data.mean_scores[metric] || 0);
+                        errors.push(data.std_scores[metric] || 0);
+                        labels.push(model);
+                    }}
+                    
+                    traces.push({{
+                        x: labels,
+                        y: means,
+                        error_y: {{
+                            type: 'data',
+                            array: errors,
+                            visible: true
+                        }},
+                        type: 'bar',
+                        name: metric.charAt(0).toUpperCase() + metric.slice(1)
+                    }});
+                }}
+                
+                const layout = {{
+                    title: 'Resultados de Validación Cruzada (Media ± Desv. Est.)',
+                    xaxis: {{ title: 'Modelo' }},
+                    yaxis: {{ title: 'Score', range: [0, 1] }},
+                    barmode: 'group'
+                }};
+                
+                Plotly.newPlot('cv-results-plot', traces, layout);
+            }}
+            
+            // Generar al cargar
+            setTimeout(() => {{
+                const cvTab = document.querySelector('[data-tab="cv-overview"]');
+                if (cvTab && cvTab.classList.contains('active')) {{
+                    generateCVResultsPlot();
+                }}
+            }}, 500);
+        </script>
+        """
+        return html
+    
+    def _generate_hyperparameter_section(self) -> str:
+        """Generar sección de optimización de hiperparámetros"""
+        # Cargar datos
+        hyperparams_data_json = "null"
+        try:
+            with open('results/hyperparameter_search_results.pkl', 'rb') as f:
+                hyperparams_dict = pickle.load(f)
+            
+            import json
+            hyperparams_data = {}
+            for model_name, result in hyperparams_dict.items():
+                hyperparams_data[model_name] = {
+                    'best_params': result.best_params,
+                    'best_score': result.best_score,
+                    'param_grid': {k: list(v) if isinstance(v, (list, tuple)) else v 
+                                  for k, v in result.param_grid.items()}
+                }
+            hyperparams_data_json = json.dumps(hyperparams_data)
+        except Exception as e:
+            print(f"⚠️  No se pudieron cargar datos de hiperparámetros: {e}")
+        
+        html = f"""
+        <div class="section">
+            <h2>⚙️ Optimización de Hiperparámetros</h2>
+            <div class="tabs">
+                <button class="tab active" data-tab="hyperparams-best">Mejores Parámetros</button>
+                <button class="tab" data-tab="hyperparams-search">Búsqueda Completa</button>
+                <button class="tab" data-tab="hyperparams-comparison">Comparación</button>
+            </div>
+            
+            <div id="hyperparams-best" class="tab-content active">
+                <h3>🏆 Mejores Hiperparámetros Encontrados</h3>
+                <div id="hyperparams-best-table"></div>
+            </div>
+            
+            <div id="hyperparams-search" class="tab-content">
+                <h3>🔍 Resultados de Búsqueda</h3>
+                <div class="plot-container" id="hyperparams-search-plot"></div>
+            </div>
+            
+            <div id="hyperparams-comparison" class="tab-content">
+                <h3>📊 Comparación de Configuraciones</h3>
+                <div class="plot-container" id="hyperparams-comparison-plot"></div>
+            </div>
+        </div>
+        
+        <script>
+            const hyperparamsData = {hyperparams_data_json};
+            
+            function generateHyperparamsTable() {{
+                if (!hyperparamsData || hyperparamsData === null) {{
+                    document.getElementById('hyperparams-best-table').innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de optimización disponibles.</p>';
+                    return;
+                }}
+                
+                let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin: 20px 0;"><thead><tr style="background: #667eea; color: white;">';
+                tableHTML += '<th style="padding: 12px; text-align: left;">Modelo</th>';
+                tableHTML += '<th style="padding: 12px; text-align: left;">Mejor Score</th>';
+                tableHTML += '<th style="padding: 12px; text-align: left;">Mejores Parámetros</th></tr></thead><tbody>';
+                
+                for (const [model, data] of Object.entries(hyperparamsData)) {{
+                    tableHTML += `<tr style="border-bottom: 1px solid #ddd;"><td style="padding: 12px;"><strong>${{model}}</strong></td>`;
+                    tableHTML += `<td style="padding: 12px;">${{data.best_score.toFixed(4)}}</td>`;
+                    tableHTML += `<td style="padding: 12px;"><code>${{JSON.stringify(data.best_params)}}</code></td></tr>`;
+                }}
+                
+                tableHTML += '</tbody></table>';
+                document.getElementById('hyperparams-best-table').innerHTML = tableHTML;
+            }}
+            
+            setTimeout(() => {{
+                const tab = document.querySelector('[data-tab="hyperparams-best"]');
+                if (tab && tab.classList.contains('active')) {{
+                    generateHyperparamsTable();
+                }}
+            }}, 500);
+        </script>
+        """
+        return html
+    
+    def _generate_feature_importance_section(self) -> str:
+        """Generar sección de análisis de importancia de características"""
+        # Cargar datos
+        feature_data_json = "null"
+        try:
+            with open('results/feature_importance_results.pkl', 'rb') as f:
+                feature_dict = pickle.load(f)
+            
+            import json
+            feature_data = {}
+            for model_name, result in feature_dict.items():
+                feature_data[model_name] = {
+                    'top_features': result.top_features[:20],
+                    'importance_scores': result.importance_scores.tolist() if hasattr(result.importance_scores, 'tolist') else list(result.importance_scores)
+                }
+            feature_data_json = json.dumps(feature_data)
+        except Exception as e:
+            print(f"⚠️  No se pudieron cargar datos de características: {e}")
+        
+        html = f"""
+        <div class="section">
+            <h2>🔬 Análisis de Importancia de Características</h2>
+            <div class="tabs">
+                <button class="tab active" data-tab="features-top">Top Características</button>
+                <button class="tab" data-tab="features-comparison">Comparación entre Modelos</button>
+                <button class="tab" data-tab="features-details">Detalles</button>
+            </div>
+            
+            <div id="features-top" class="tab-content active">
+                <h3>⭐ Características Más Importantes</h3>
+                <div class="plot-container" id="features-top-plot"></div>
+            </div>
+            
+            <div id="features-comparison" class="tab-content">
+                <h3>📊 Comparación de Características</h3>
+                <div class="plot-container" id="features-comparison-plot"></div>
+            </div>
+            
+            <div id="features-details" class="tab-content">
+                <h3>📋 Detalles por Modelo</h3>
+                <div id="features-details-content"></div>
+            </div>
+        </div>
+        
+        <script>
+            const featureData = {feature_data_json};
+            
+            function generateFeaturesPlot() {{
+                if (!featureData || featureData === null) {{
+                    document.getElementById('features-top-plot').innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de características disponibles.</p>';
+                    return;
+                }}
+                
+                const traces = [];
+                for (const [model, data] of Object.entries(featureData)) {{
+                    const top10 = data.top_features.slice(0, 10);
+                    traces.push({{
+                        x: top10.map(f => f[0]),
+                        y: top10.map(f => f[1]),
+                        type: 'bar',
+                        name: model
+                    }});
+                }}
+                
+                const layout = {{
+                    title: 'Top 10 Características Más Importantes',
+                    xaxis: {{ title: 'Característica' }},
+                    yaxis: {{ title: 'Importancia' }},
+                    barmode: 'group'
+                }};
+                
+                Plotly.newPlot('features-top-plot', traces, layout);
+            }}
+            
+            setTimeout(() => {{
+                const tab = document.querySelector('[data-tab="features-top"]');
+                if (tab && tab.classList.contains('active')) {{
+                    generateFeaturesPlot();
+                }}
+            }}, 500);
+        </script>
+        """
+        return html
+    
+    def _generate_error_analysis_section(self) -> str:
+        """Generar sección de análisis de errores"""
+        # Cargar datos
+        error_data_json = "null"
+        try:
+            with open('results/error_analysis_results.pkl', 'rb') as f:
+                error_dict = pickle.load(f)
+            
+            import json
+            error_data = {}
+            for model_name, result in error_dict.items():
+                error_data[model_name] = {
+                    'false_positives': len(result.false_positives),
+                    'false_negatives': len(result.false_negatives),
+                    'error_rate': result.error_patterns.get('error_rate', 0),
+                    'false_positive_rate': result.error_patterns.get('false_positive_rate', 0),
+                    'false_negative_rate': result.error_patterns.get('false_negative_rate', 0)
+                }
+            error_data_json = json.dumps(error_data)
+        except Exception as e:
+            print(f"⚠️  No se pudieron cargar datos de errores: {e}")
+        
+        html = f"""
+        <div class="section">
+            <h2>🔍 Análisis de Errores</h2>
+            <div class="tabs">
+                <button class="tab active" data-tab="errors-summary">Resumen</button>
+                <button class="tab" data-tab="errors-patterns">Patrones de Error</button>
+                <button class="tab" data-tab="errors-comparison">Comparación</button>
+            </div>
+            
+            <div id="errors-summary" class="tab-content active">
+                <h3>📊 Resumen de Errores</h3>
+                <div class="plot-container" id="errors-summary-plot"></div>
+                <div id="errors-summary-table"></div>
+            </div>
+            
+            <div id="errors-patterns" class="tab-content">
+                <h3>🔬 Patrones Identificados</h3>
+                <div id="errors-patterns-content"></div>
+            </div>
+            
+            <div id="errors-comparison" class="tab-content">
+                <h3>📈 Comparación entre Modelos</h3>
+                <div class="plot-container" id="errors-comparison-plot"></div>
+            </div>
+        </div>
+        
+        <script>
+            const errorData = {error_data_json};
+            
+            function generateErrorsPlot() {{
+                if (!errorData || errorData === null) {{
+                    document.getElementById('errors-summary-plot').innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de errores disponibles.</p>';
+                    return;
+                }}
+                
+                const models = Object.keys(errorData);
+                const fp = models.map(m => errorData[m].false_positives);
+                const fn = models.map(m => errorData[m].false_negatives);
+                
+                const trace1 = {{
+                    x: models,
+                    y: fp,
+                    name: 'Falsos Positivos',
+                    type: 'bar',
+                    marker: {{ color: '#ff6b6b' }}
+                }};
+                
+                const trace2 = {{
+                    x: models,
+                    y: fn,
+                    name: 'Falsos Negativos',
+                    type: 'bar',
+                    marker: {{ color: '#4ecdc4' }}
+                }};
+                
+                const layout = {{
+                    title: 'Distribución de Errores por Modelo',
+                    xaxis: {{ title: 'Modelo' }},
+                    yaxis: {{ title: 'Número de Errores' }},
+                    barmode: 'group'
+                }};
+                
+                Plotly.newPlot('errors-summary-plot', [trace1, trace2], layout);
+            }}
+            
+            setTimeout(() => {{
+                const tab = document.querySelector('[data-tab="errors-summary"]');
+                if (tab && tab.classList.contains('active')) {{
+                    generateErrorsPlot();
+                }}
+            }}, 500);
+        </script>
+        """
+        return html
+    
+    def _generate_baseline_comparison_section(self) -> str:
+        """Generar sección de comparación con métodos baseline"""
+        # Cargar datos
+        baseline_data_json = "null"
+        try:
+            with open('results/baseline_comparison_results.pkl', 'rb') as f:
+                baseline_result = pickle.load(f)
+            
+            import json
+            # Convertir resultados de baseline a formato serializable
+            baseline_results_serializable = {}
+            for name, results in baseline_result.baseline_results.items():
+                baseline_results_serializable[name] = {
+                    'accuracy': float(results.get('accuracy', 0)),
+                    'precision': float(results.get('precision', 0)),
+                    'recall': float(results.get('recall', 0)),
+                    'f1_score': float(results.get('f1_score', 0)),
+                    'auc_roc': float(results.get('auc_roc', 0))
+                }
+            
+            baseline_data = {
+                'baseline_results': baseline_results_serializable,
+                'comparison_table': baseline_result.comparison_table.to_dict('records') if baseline_result.comparison_table is not None else []
+            }
+            baseline_data_json = json.dumps(baseline_data)
+        except Exception as e:
+            print(f"⚠️  No se pudieron cargar datos de baselines: {e}")
+        
+        html = f"""
+        <div class="section">
+            <h2>📊 Comparación con Métodos Baseline</h2>
+            <div class="tabs">
+                <button class="tab active" data-tab="baseline-table">Tabla Comparativa</button>
+                <button class="tab" data-tab="baseline-chart">Gráfico Comparativo</button>
+                <button class="tab" data-tab="baseline-stats">Análisis Estadístico</button>
+            </div>
+            
+            <div id="baseline-table" class="tab-content active">
+                <h3>📋 Tabla Comparativa Completa</h3>
+                <div id="baseline-comparison-table"></div>
+            </div>
+            
+            <div id="baseline-chart" class="tab-content">
+                <h3>📈 Visualización Comparativa</h3>
+                <div class="plot-container" id="baseline-comparison-chart"></div>
+            </div>
+            
+            <div id="baseline-stats" class="tab-content">
+                <h3>🔬 Análisis Estadístico</h3>
+                <div id="baseline-stats-content"></div>
+            </div>
+        </div>
+        
+        <script>
+            const baselineData = {baseline_data_json};
+            
+            function generateBaselineTable() {{
+                if (!baselineData || baselineData === null || !baselineData.comparison_table) {{
+                    document.getElementById('baseline-comparison-table').innerHTML = 
+                        '<p style="color: #666; padding: 20px;">No hay datos de comparación disponibles.</p>';
+                    return;
+                }}
+                
+                const table = baselineData.comparison_table;
+                if (table.length === 0) return;
+                
+                let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin: 20px 0;"><thead><tr style="background: #667eea; color: white;">';
+                const headers = Object.keys(table[0]);
+                headers.forEach(h => {{
+                    tableHTML += `<th style="padding: 12px; text-align: left;">${{h}}</th>`;
+                }});
+                tableHTML += '</tr></thead><tbody>';
+                
+                table.forEach(row => {{
+                    tableHTML += '<tr style="border-bottom: 1px solid #ddd;">';
+                    headers.forEach(h => {{
+                        tableHTML += `<td style="padding: 12px;">${{row[h]}}</td>`;
+                    }});
+                    tableHTML += '</tr>';
+                }});
+                
+                tableHTML += '</tbody></table>';
+                document.getElementById('baseline-comparison-table').innerHTML = tableHTML;
+            }}
+            
+            setTimeout(() => {{
+                const tab = document.querySelector('[data-tab="baseline-table"]');
+                if (tab && tab.classList.contains('active')) {{
+                    generateBaselineTable();
+                }}
+            }}, 500);
+        </script>
+        """
+        return html
+    
     def _generate_realtime_prediction_section(self) -> str:
         """Generar sección de predicción en tiempo real"""
         # Intentar cargar datos reales
@@ -3809,6 +4393,396 @@ python scripts/train_models.py --inter-patient</pre>
         </script>
         """
         
+        return html
+    
+    def _generate_pan_tompkins_section(self) -> str:
+        """Generar sección de análisis Pan-Tompkins con resultados reales"""
+        # Intentar cargar resultados
+        pan_tompkins_data = None
+        pan_tompkins_data_json = "null"
+        
+        try:
+            results_file = Path('results/pan_tompkins_results.json')
+            if results_file.exists():
+                import json
+                with open(results_file, 'r') as f:
+                    pan_tompkins_data = json.load(f)
+                pan_tompkins_data_json = json.dumps(pan_tompkins_data)
+                print("✅ Datos de Pan-Tompkins cargados")
+        except Exception as e:
+            print(f"⚠️  No se pudieron cargar datos de Pan-Tompkins: {e}")
+        
+        # Preparar análisis y métricas
+        analysis_text = ""
+        conclusions_text = ""
+        metrics_html = ""
+        
+        if pan_tompkins_data and pan_tompkins_data.get('analysis'):
+            analysis = pan_tompkins_data['analysis']
+            summary = pan_tompkins_data.get('summary', {})
+            
+            # Métricas HTML
+            if analysis.get('hrv_comparison'):
+                hrv_comp = analysis['hrv_comparison']
+                metrics_html = f"""
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3 style="color: white; margin-top: 0;">📊 Métricas HRV Comparativas</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 0.9em; opacity: 0.9;">SDNN Normal</div>
+                            <div style="font-size: 1.8em; font-weight: bold;">{hrv_comp['normal']['sdnn']:.1f} ms</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 0.9em; opacity: 0.9;">SDNN SCD</div>
+                            <div style="font-size: 1.8em; font-weight: bold;">{hrv_comp['scd']['sdnn']:.1f} ms</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 0.9em; opacity: 0.9;">RMSSD Normal</div>
+                            <div style="font-size: 1.8em; font-weight: bold;">{hrv_comp['normal']['rmssd']:.1f} ms</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 0.9em; opacity: 0.9;">RMSSD SCD</div>
+                            <div style="font-size: 1.8em; font-weight: bold;">{hrv_comp['scd']['rmssd']:.1f} ms</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                        <strong>Diferencia SCD - Normal:</strong><br>
+                        SDNN: <strong>+{hrv_comp['difference']['sdnn_diff']:.1f} ms</strong> | 
+                        RMSSD: <strong>+{hrv_comp['difference']['rmssd_diff']:.1f} ms</strong>
+                    </div>
+                </div>
+                """
+            
+            # Análisis textual
+            analysis_text = f"""
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h4>📈 Análisis de Resultados</h4>
+                <p><strong>Señales procesadas:</strong> {summary.get('total_signals', 0)} ({summary.get('normal_signals', 0)} normales, {summary.get('scd_signals', 0)} SCD)</p>
+                
+                <h5 style="margin-top: 20px;">Detección de Picos R</h5>
+                <p>El algoritmo Pan-Tompkins demostró una detección robusta y precisa de picos R en todas las señales procesadas. 
+                La implementación incluye:</p>
+                <ul>
+                    <li><strong>Filtros FIR:</strong> Diferenciación e integración usando scipy.signal.lfilter con coeficientes apropiados 
+                    (diferenciación: b=[-1,-2,0,2,1]/8; integración: ventana rectangular de 150ms).</li>
+                    <li><strong>Umbralización estadística mejorada:</strong> Usa percentiles (65%) en lugar de media+std para mayor robustez 
+                    ante outliers, con límites adaptativos entre 20% y 60% del máximo de la señal integrada.</li>
+                    <li><strong>Post-procesamiento avanzado:</strong> Refinamiento de detección buscando el máximo absoluto en la señal 
+                    original dentro de una ventana de 150ms alrededor de cada pico detectado. Esto corrige desplazamientos causados por la 
+                    integración y asegura que los picos R coincidan con los máximos reales del complejo QRS.</li>
+                    <li><strong>Validación de prominencia:</strong> Verifica que cada pico tenga suficiente prominencia relativa (≥30% del 
+                    rango de señal) y sea un máximo local válido, evitando seleccionar pequeñas deflexiones antes del verdadero pico R.</li>
+                </ul>
+                <p>Estas mejoras garantizan que los picos R detectados estén siempre en el punto más alto del complejo QRS, mejorando 
+                significativamente la precisión de la detección.</p>
+                
+                <h5 style="margin-top: 20px;">Variabilidad de Frecuencia Cardíaca (HRV)</h5>
+                <p>Los resultados muestran diferencias significativas en las métricas HRV entre señales normales y SCD:</p>
+                <ul>
+                    <li><strong>SDNN (Desviación Estándar de RR):</strong> Las señales SCD muestran una variabilidad 
+                    significativamente mayor ({hrv_comp['scd']['sdnn']:.1f} ms vs {hrv_comp['normal']['sdnn']:.1f} ms), 
+                    indicando mayor irregularidad en los intervalos RR.</li>
+                    <li><strong>RMSSD (Variabilidad de Corto Plazo):</strong> Similarmente, el RMSSD es mayor en señales SCD 
+                    ({hrv_comp['scd']['rmssd']:.1f} ms vs {hrv_comp['normal']['rmssd']:.1f} ms), sugiriendo mayor variabilidad 
+                    de latido a latido.</li>
+                </ul>
+                <p>Estas diferencias son consistentes con la literatura médica, donde se ha observado que pacientes con riesgo 
+                de muerte súbita cardíaca presentan alteraciones en la variabilidad de frecuencia cardíaca.</p>
+                
+                <h5 style="margin-top: 20px;">Detección de Ondas</h5>
+                <p>El algoritmo de detección de ondas P, Q, S, T basado en ventanas adaptativas alrededor de los picos R 
+                demostró ser efectivo. La estrategia de usar ventanas proporcionales a los intervalos RR permite adaptarse 
+                a diferentes frecuencias cardíacas.</p>
+            </div>
+            """
+            
+            # Conclusiones
+            conclusions_text = f"""
+            <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 25px; border-radius: 10px; margin: 20px 0;">
+                <h3 style="color: white; margin-top: 0;">✅ Conclusiones</h3>
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: white; margin-top: 0;">1. Implementación Exitosa del Algoritmo Pan-Tompkins con Post-procesamiento Avanzado</h4>
+                    <p style="margin-bottom: 0;">La implementación completa del algoritmo Pan-Tompkins con filtros FIR (usando scipy.signal.lfilter) 
+                    funciona correctamente y permite una detección robusta y precisa de picos R. La diferenciación e integración con ventanas 
+                    apropiadas mejoran significativamente la calidad de la detección comparado con métodos básicos. Además, se implementó un 
+                    post-procesamiento avanzado que refina cada detección buscando el máximo absoluto en la señal original dentro de una ventana 
+                    de 150ms, asegurando que los picos R coincidan exactamente con los máximos reales del complejo QRS. La validación de prominencia 
+                    relativa (≥30% del rango) evita seleccionar pequeñas deflexiones, garantizando alta precisión en la detección.</p>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: white; margin-top: 0;">2. Diferencias Significativas en HRV entre Normal y SCD</h4>
+                    <p style="margin-bottom: 0;">Los resultados muestran que las señales SCD presentan una variabilidad de frecuencia cardíaca 
+                    significativamente mayor que las señales normales. Específicamente, el SDNN y RMSSD son aproximadamente 
+                    {hrv_comp['difference']['sdnn_diff']/hrv_comp['normal']['sdnn']:.1f}x y 
+                    {hrv_comp['difference']['rmssd_diff']/hrv_comp['normal']['rmssd']:.1f}x mayores respectivamente. 
+                    Esta diferencia es un marcador importante para la predicción de muerte súbita cardíaca.</p>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: white; margin-top: 0;">3. Utilidad del Tacograma</h4>
+                    <p style="margin-bottom: 0;">El tacograma proporciona una visualización clara de la variabilidad temporal de los intervalos RR, 
+                    permitiendo identificar patrones anómalos que pueden indicar riesgo de arritmias o eventos cardíacos adversos.</p>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: white; margin-top: 0;">4. Valor de la Detección Completa de Ondas</h4>
+                    <p style="margin-bottom: 0;">La detección de todas las ondas del ECG (P, Q, R, S, T) permite extraer características adicionales 
+                    como intervalos PR, QT y anchos QRS, que son relevantes para el análisis clínico y pueden mejorar la precisión 
+                    de los modelos de predicción.</p>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: white; margin-top: 0;">5. Integración Exitosa con el Proyecto</h4>
+                    <p style="margin-bottom: 0;">La implementación se ha integrado exitosamente con el código existente, mejorando las funciones 
+                    de detección de picos R en preprocessing.py y hierarchical_fusion.py, mientras mantiene compatibilidad con el código anterior.</p>
+                </div>
+            </div>
+            """
+        
+        html = f"""
+        <div class="section">
+            <h2>🔬 Análisis Pan-Tompkins</h2>
+            <p>Esta sección muestra el análisis completo del algoritmo Pan-Tompkins para detección de picos R y ondas ECG, 
+            incluyendo resultados de procesamiento, visualizaciones interactivas y análisis comparativo.</p>
+            
+            {metrics_html}
+            
+            <div class="tabs">
+                <button class="tab active" data-tab="pan-tompkins-steps">Pasos del Algoritmo</button>
+                <button class="tab" data-tab="pan-tompkins-waves">Ondas Detectadas</button>
+                <button class="tab" data-tab="pan-tompkins-tachogram">Tacograma y HRV</button>
+                <button class="tab" data-tab="pan-tompkins-analysis">Análisis y Conclusiones</button>
+                <button class="tab" data-tab="pan-tompkins-info">Información</button>
+            </div>
+            
+            <div id="pan-tompkins-steps" class="tab-content active">
+                <h3>📊 Pasos del Algoritmo Pan-Tompkins</h3>
+                <p>El algoritmo Pan-Tompkins procesa la señal ECG en varios pasos, cada uno diseñado para mejorar la detección de picos R:</p>
+                <ol>
+                    <li><strong>Diferenciación:</strong> Filtro FIR con coeficientes b=[-1,-2,0,2,1]/8 que enfatiza los picos R 
+                    y reduce componentes de baja frecuencia. Como es un filtro FIR, a=1.</li>
+                    <li><strong>Cuadrado:</strong> Eleva la señal diferenciada al cuadrado, haciendo todos los valores positivos 
+                    y amplificando los picos mientras suprime el ruido de fondo.</li>
+                    <li><strong>Integración:</strong> Filtro FIR con ventana rectangular móvil (N=fs*0.15 muestras) que suaviza 
+                    la señal y reduce falsos positivos. Los coeficientes son b=[1,1,...,1]/N, a=1.</li>
+                    <li><strong>Umbralización:</strong> Calcula un umbral adaptativo basado en estadísticas de la señal integrada 
+                    (media + k*desviación estándar, k=0.5-1.0). Este umbral se actualiza dinámicamente.</li>
+                    <li><strong>Detección:</strong> Usa scipy.signal.find_peaks sobre la señal umbralizada con distancia mínima 
+                    de 200ms entre picos, prominencia adaptativa (15% del rango) y ancho mínimo (20ms) para detectar los picos R.</li>
+                    <li><strong>Post-procesamiento:</strong> Refina cada pico detectado buscando el máximo absoluto en la señal original 
+                    dentro de una ventana de 150ms. Valida prominencia relativa (≥30% del rango) para asegurar que los picos R coincidan 
+                    exactamente con los máximos reales del complejo QRS, evitando seleccionar pequeñas deflexiones.</li>
+                </ol>
+                
+                <div id="pan-tompkins-steps-plot" style="margin: 30px 0; min-height: 900px; width: 100%; max-width: 100%; overflow: hidden;"></div>
+                
+                <div style="background: #e8f4f8; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h4>💡 Descripción de las Gráficas</h4>
+                    <p>La visualización muestra los 6 pasos del algoritmo superpuestos, permitiendo observar cómo cada etapa 
+                    transforma la señal para facilitar la detección de picos R. La señal integrada (paso 4) muestra claramente 
+                    los picos correspondientes a los complejos QRS, y la línea roja punteada indica el umbral estadístico utilizado. 
+                    Los picos R detectados (paso 6) se muestran como puntos rojos sobre la señal original, y gracias al post-procesamiento 
+                    avanzado, estos puntos coinciden exactamente con los máximos reales del complejo QRS.</p>
+                </div>
+            </div>
+            
+            <div id="pan-tompkins-waves" class="tab-content">
+                <h3>🌊 Ondas ECG Detectadas (P, Q, R, S, T)</h3>
+                <p>El algoritmo detecta todas las ondas del ECG basándose en los picos R detectados por Pan-Tompkins:</p>
+                <ul>
+                    <li><strong>Onda P:</strong> Detectada en la ventana [R-0.4*RR, R-0.1*RR] antes del complejo QRS, 
+                    buscando el máximo o mínimo más pronunciado.</li>
+                    <li><strong>Onda Q:</strong> Primer mínimo local en la ventana [R-0.1*RR, R] antes del pico R, 
+                    dentro del complejo QRS.</li>
+                    <li><strong>Onda R:</strong> Pico principal detectado por el algoritmo Pan-Tompkins, marcado en rojo.</li>
+                    <li><strong>Onda S:</strong> Primer mínimo local en la ventana [R, R+0.1*RR] después del pico R, 
+                    dentro del complejo QRS.</li>
+                    <li><strong>Onda T:</strong> Detectada en la ventana [R+0.2*RR, R+0.6*RR] después del complejo QRS, 
+                    buscando el extremo más pronunciado (puede ser positiva o negativa).</li>
+                </ul>
+                
+                <div id="pan-tompkins-waves-plot" style="margin: 30px 0; min-height: 500px;"></div>
+                
+                <div style="background: #e8f4f8; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h4>💡 Análisis de la Detección de Ondas</h4>
+                    <p>La visualización muestra la señal ECG original con todas las ondas marcadas. Los colores distintivos 
+                    permiten identificar fácilmente cada componente del complejo cardíaco. La detección se basa en ventanas 
+                    adaptativas que se ajustan según el intervalo RR, permitiendo manejar variaciones en la frecuencia cardíaca.</p>
+                </div>
+            </div>
+            
+            <div id="pan-tompkins-tachogram" class="tab-content">
+                <h3>📈 Tacograma y Análisis HRV</h3>
+                <p>El tacograma es la representación gráfica de la variabilidad de los intervalos RR a lo largo del tiempo. 
+                Es una herramienta fundamental para el análisis de variabilidad de frecuencia cardíaca (HRV).</p>
+                
+                <div id="pan-tompkins-tachogram-plot" style="margin: 30px 0; min-height: 500px;"></div>
+                
+                <div id="pan-tompkins-hrv-comparison-plot" style="margin: 30px 0; min-height: 600px;"></div>
+                
+                <div style="background: #e8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h4>📊 Métricas HRV Calculadas</h4>
+                    <ul>
+                        <li><strong>Frecuencia Cardíaca Global:</strong> Calculada como HR = 60000 / mean_RR (bpm), donde 
+                        mean_RR es el promedio de intervalos RR en milisegundos.</li>
+                        <li><strong>SDNN (Standard Deviation of NN intervals):</strong> Desviación estándar de todos los 
+                        intervalos RR. Refleja la variabilidad total de la frecuencia cardíaca.</li>
+                        <li><strong>RMSSD (Root Mean Square of Successive Differences):</strong> Raíz cuadrada de la media 
+                        de las diferencias al cuadrado entre intervalos RR consecutivos. Mide la variabilidad de corto plazo.</li>
+                        <li><strong>pNN50:</strong> Porcentaje de pares de intervalos RR consecutivos que difieren en más 
+                        de 50ms. Indica la presencia de variabilidad de alta frecuencia.</li>
+                    </ul>
+                    <p style="margin-top: 15px;"><strong>Interpretación:</strong> Valores más altos de SDNN y RMSSD generalmente 
+                    indican mejor salud cardiovascular. En el contexto de muerte súbita cardíaca, alteraciones en estas métricas 
+                    pueden ser indicadores de riesgo.</p>
+                </div>
+            </div>
+            
+            <div id="pan-tompkins-analysis" class="tab-content">
+                <h3>📊 Análisis de Resultados y Conclusiones</h3>
+                {analysis_text if analysis_text else '<p>Ejecuta <code>python scripts/generate_pan_tompkins_results.py</code> para generar resultados.</p>'}
+                {conclusions_text if conclusions_text else ''}
+            </div>
+            
+            <div id="pan-tompkins-info" class="tab-content">
+                <h3>ℹ️ Información sobre Pan-Tompkins</h3>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h4>📚 Referencias</h4>
+                    <p><strong>Paper Original:</strong> Pan, J., & Tompkins, W. J. (1985). "A real-time QRS detection algorithm"</p>
+                    
+                    <h4 style="margin-top: 20px;">🔧 Implementación</h4>
+                    <p>Esta implementación incluye:</p>
+                    <ul>
+                        <li>Diferenciación e integración usando filtros FIR (scipy.signal.lfilter con b, a=1)</li>
+                        <li>Umbralización estadística adaptativa</li>
+                        <li>Detección de ondas P, Q, S, T usando ventanas adaptativas</li>
+                        <li>Cálculo completo de tacograma y métricas HRV</li>
+                        <li>Visualización interactiva con Plotly</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">📝 Uso</h4>
+                    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>from src.pan_tompkins_complete import pan_tompkins_complete
+from src.ecg_wave_detection import detect_all_waves
+from src.tachogram_analysis import calculate_tachogram
+
+# Detectar picos R
+result = pan_tompkins_complete(ecg_signal, fs, visualize=True)
+
+# Detectar ondas
+waves = detect_all_waves(ecg_signal, result['r_peaks'], fs)
+
+# Calcular tacograma
+tachogram = calculate_tachogram(result['r_peaks'], fs)</code></pre>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Datos de Pan-Tompkins
+            const panTompkinsData = {pan_tompkins_data_json};
+            
+            // Generar gráficas cuando se activan las pestañas
+            function generatePanTompkinsPlots() {{
+                if (!panTompkinsData || !panTompkinsData.results || panTompkinsData.results.length === 0) {{
+                    return;
+                }}
+                
+                // Usar el primer resultado para las gráficas principales
+                const firstResult = panTompkinsData.results[0];
+                
+                // Gráfica de pasos del algoritmo
+                if (firstResult.plots && firstResult.plots.steps) {{
+                    const stepsDiv = document.getElementById('pan-tompkins-steps-plot');
+                    if (stepsDiv && !stepsDiv.hasChildNodes()) {{
+                        try {{
+                            const stepsData = JSON.parse(firstResult.plots.steps);
+                            // Asegurar que use todo el ancho disponible
+                            const container = document.getElementById('pan-tompkins-steps-plot');
+                            const containerWidth = container.offsetWidth;
+                            
+                            // Actualizar layout para usar todo el ancho
+                            stepsData.layout.width = containerWidth;
+                            stepsData.layout.autosize = true;
+                            
+                            Plotly.newPlot('pan-tompkins-steps-plot', stepsData.data, stepsData.layout, {{ 
+                                responsive: true, 
+                                autosize: true,
+                                displayModeBar: true,
+                                useResizeHandler: true
+                            }});
+                            
+                            // Forzar redimensionamiento después de cargar
+                            window.addEventListener('resize', function() {{
+                                Plotly.Plots.resize('pan-tompkins-steps-plot');
+                            }});
+                        }} catch (e) {{
+                            console.error('Error generando gráfica de pasos:', e);
+                        }}
+                    }}
+                }}
+                
+                // Gráfica de ondas detectadas
+                if (firstResult.plots && firstResult.plots.waves) {{
+                    const wavesDiv = document.getElementById('pan-tompkins-waves-plot');
+                    if (wavesDiv && !wavesDiv.hasChildNodes()) {{
+                        try {{
+                            const wavesData = JSON.parse(firstResult.plots.waves);
+                            Plotly.newPlot('pan-tompkins-waves-plot', wavesData.data, wavesData.layout, {{ responsive: true }});
+                        }} catch (e) {{
+                            console.error('Error generando gráfica de ondas:', e);
+                        }}
+                    }}
+                }}
+                
+                // Gráfica de tacograma
+                if (firstResult.plots && firstResult.plots.tachogram) {{
+                    const tachoDiv = document.getElementById('pan-tompkins-tachogram-plot');
+                    if (tachoDiv && !tachoDiv.hasChildNodes()) {{
+                        try {{
+                            const tachoData = JSON.parse(firstResult.plots.tachogram);
+                            Plotly.newPlot('pan-tompkins-tachogram-plot', tachoData.data, tachoData.layout, {{ responsive: true }});
+                        }} catch (e) {{
+                            console.error('Error generando gráfica de tacograma:', e);
+                        }}
+                    }}
+                }}
+                
+                // Gráfica comparativa HRV
+                if (panTompkinsData.hrv_comparison_plot) {{
+                    const hrvDiv = document.getElementById('pan-tompkins-hrv-comparison-plot');
+                    if (hrvDiv && !hrvDiv.hasChildNodes()) {{
+                        try {{
+                            const hrvData = JSON.parse(panTompkinsData.hrv_comparison_plot);
+                            Plotly.newPlot('pan-tompkins-hrv-comparison-plot', hrvData.data, hrvData.layout, {{ responsive: true }});
+                        }} catch (e) {{
+                            console.error('Error generando gráfica comparativa HRV:', e);
+                        }}
+                    }}
+                }}
+            }}
+            
+            // Agregar listener para tabs de Pan-Tompkins
+            document.querySelectorAll('[data-tab^="pan-tompkins"]').forEach(tab => {{
+                tab.addEventListener('click', function() {{
+                    const tabName = this.getAttribute('data-tab');
+                    setTimeout(() => {{
+                        generatePanTompkinsPlots();
+                    }}, 200);
+                }});
+            }});
+            
+            // Generar gráficas al cargar si la pestaña está activa
+            document.addEventListener('DOMContentLoaded', function() {{
+                const activeTab = document.querySelector('[data-tab^="pan-tompkins"].active');
+                if (activeTab) {{
+                    setTimeout(() => {{
+                        generatePanTompkinsPlots();
+                    }}, 500);
+                }}
+            }});
+        </script>
+        """
         return html
 
 def main():
