@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Temporal Plot</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.3.min.js" charset="utf-8"></script>
+</head>
+<body>
+    <h1>Test: Gráfico Temporal</h1>
+    <div id="accuracy-vs-time-plot" style="width: 800px; height: 500px;"></div>
+    
+    <script>
+        // Datos de prueba (simulando exactamente los datos del dashboard)
+        const temporalData = {
+            "intervals": [0, 5, 10, 15, 20, 25, 30],
+            "results_by_model": {
+                "hierarchical": {
+                    "1": {"accuracy": 0.0, "precision": 0.8482142857142858, "recall": 0.8205128205128205, "f1_score": 0.8253690753690753, "auc_roc": 0.0, "n_samples": 1},
+                    "2": {"accuracy": 0.0, "precision": 0.8482142857142858, "recall": 0.8205128205128205, "f1_score": 0.8253690753690753, "auc_roc": 0.0, "n_samples": 1},
+                    "3": {"accuracy": 1.0, "precision": 0.8482142857142858, "recall": 0.8205128205128205, "f1_score": 0.8253690753690753, "auc_roc": 0.0, "n_samples": 1},
+                    "4": {"accuracy": 0.0, "precision": 0.8482142857142858, "recall": 0.8205128205128205, "f1_score": 0.8253690753690753, "auc_roc": 0.0, "n_samples": 1},
+                    "5": {"accuracy": 0.0, "precision": 0.8482142857142858, "recall": 0.8205128205128205, "f1_score": 0.8253690753690753, "auc_roc": 0.0, "n_samples": 1}
+                }
+            }
+        };
+        
+        function generateAccuracyVsTimePlot() {
+            console.log('[Test] Iniciando generateAccuracyVsTimePlot');
+            
+            const plotElement = document.getElementById('accuracy-vs-time-plot');
+            if (!plotElement) {
+                console.error('[Test] ❌ Elemento no encontrado');
+                return;
+            }
+            
+            if (typeof Plotly === 'undefined') {
+                console.error('[Test] ❌ Plotly no está cargado');
+                return;
+            }
+            
+            const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
+            const models = Object.keys(temporalData.results_by_model);
+            console.log('[Test] Modelos:', models);
+            
+            const modelNames = {
+                'sparse': 'Representaciones Dispersas',
+                'hierarchical': 'Fusión Jerárquica',
+                'hybrid': 'Modelo Híbrido'
+            };
+            const colors = {'sparse': '#11998e', 'hierarchical': '#667eea', 'hybrid': '#f5576c'};
+            
+            const traces = [];
+            
+            models.forEach(modelName => {
+                console.log(`[Test] Procesando modelo: ${modelName}`);
+                const modelData = temporalData.results_by_model[modelName];
+                if (!modelData) return;
+                
+                const availableKeys = Object.keys(modelData).map(k => parseInt(k)).filter(k => !isNaN(k)).sort((a, b) => a - b);
+                const validIntervals = intervals.filter(i => i > 0);
+                
+                console.log(`[Test]   Claves: ${availableKeys}, Intervalos: ${validIntervals}`);
+                
+                const precisions = [];
+                const xValues = [];
+                
+                availableKeys.forEach((key, keyIdx) => {
+                    if (keyIdx < validIntervals.length) {
+                        const interval = validIntervals[keyIdx];
+                        const keyStr = String(key);
+                        
+                        if (modelData[keyStr] !== undefined) {
+                            const precision = modelData[keyStr].precision || modelData[keyStr].accuracy;
+                            if (precision !== null && precision !== undefined && !isNaN(precision)) {
+                                precisions.push(precision * 100);
+                                xValues.push(interval);
+                                console.log(`[Test]   ✅ Agregado: x=${interval}, y=${(precision*100).toFixed(2)}%`);
+                            }
+                        }
+                    }
+                });
+                
+                if (precisions.length > 0) {
+                    traces.push({
+                        x: xValues,
+                        y: precisions,
+                        name: modelNames[modelName] || modelName,
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        marker: { size: 10, color: colors[modelName] || '#666' },
+                        line: { width: 3, color: colors[modelName] || '#666' }
+                    });
+                    console.log(`[Test]   ✅ Trace agregado: ${precisions.length} puntos`);
+                }
+            });
+            
+            // Agregar paper
+            const paperIntervals = intervals.filter(i => i > 0);
+            const paperPrecisions = [94.3, 93.5, 92.8, 93.8, 92.8, 95.0];
+            const paperValues = paperIntervals.map((interval, idx) => {
+                const paperIdx = Math.min(idx, paperPrecisions.length - 1);
+                return paperPrecisions[paperIdx];
+            });
+            
+            traces.push({
+                x: paperIntervals,
+                y: paperValues,
+                name: 'Sensors 2021 (Paper)',
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: { size: 10, color: '#999', symbol: 'diamond' },
+                line: { width: 2, color: '#999', dash: 'dash' }
+            });
+            
+            console.log(`[Test] Total traces: ${traces.length}`);
+            
+            // Calcular rango Y
+            let minY = 100;
+            let maxY = 0;
+            traces.forEach(trace => {
+                if (trace.y && trace.y.length > 0) {
+                    const traceMin = Math.min(...trace.y);
+                    const traceMax = Math.max(...trace.y);
+                    minY = Math.min(minY, traceMin);
+                    maxY = Math.max(maxY, traceMax);
+                }
+            });
+            
+            minY = Math.max(0, minY - 2);
+            maxY = Math.min(100, maxY + 2);
+            
+            const hasHierarchical = traces.some(t => t.name === 'Fusión Jerárquica');
+            if (hasHierarchical && minY >= 85) {
+                console.log('[Test] ⚠️  Forzando minY = 82');
+                minY = 82;
+            }
+            
+            console.log(`[Test] Rango Y: [${minY.toFixed(2)}, ${maxY.toFixed(2)}]`);
+            
+            const layout = {
+                title: { text: 'Precisión vs Minutos Antes de SCD', font: { size: 20, color: '#667eea' } },
+                xaxis: { title: 'Minutos Antes de SCD', titlefont: { size: 14 } },
+                yaxis: { title: 'Precisión (%)', titlefont: { size: 14 }, range: [minY, maxY] },
+                height: 500,
+                margin: { l: 60, r: 40, t: 80, b: 60 },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white',
+                legend: { x: 0.7, y: 0.1 }
+            };
+            
+            try {
+                Plotly.newPlot('accuracy-vs-time-plot', traces, layout, { responsive: true });
+                console.log('[Test] ✅ Gráfico generado');
+            } catch (error) {
+                console.error('[Test] ❌ Error:', error);
+            }
+        }
+        
+        // Ejecutar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', generateAccuracyVsTimePlot);
+        } else {
+            generateAccuracyVsTimePlot();
+        }
+    </script>
+</body>
+</html>
