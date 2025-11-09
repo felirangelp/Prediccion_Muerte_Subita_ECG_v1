@@ -1508,8 +1508,8 @@ python scripts/train_models_temporal.py</pre>
             </div>
             
             <div id="temporal-overview" class="tab-content active">
-                <h3>📊 Rendimiento por Distancia Temporal al Evento SCD</h3>
-                <p>Esta sección analiza cómo varía el rendimiento (accuracy) de los modelos según la distancia temporal al evento de muerte súbita cardíaca.</p>
+                <h3>📊 Precisión por Distancia Temporal al Evento SCD</h3>
+                <p>Esta sección analiza cómo varía la precisión de los modelos según la distancia temporal al evento de muerte súbita cardíaca.</p>
                 <div class="plot-container" id="accuracy-vs-time-plot"></div>
                 <h3 style="margin-top: 40px;">📋 Resultados por Intervalo Temporal</h3>
                 <div id="temporal-results-table"></div>
@@ -1539,50 +1539,18 @@ python scripts/train_models_temporal.py</pre>
             
             // Generar gráfico de precisión vs tiempo
             function generateAccuracyVsTimePlot() {{
-                console.log('[Temporal Plot] Iniciando generateAccuracyVsTimePlot');
-                
-                // Verificar que el elemento existe
-                const plotElement = document.getElementById('accuracy-vs-time-plot');
-                if (!plotElement) {{
-                    console.error('[Temporal Plot] ❌ Elemento accuracy-vs-time-plot no encontrado');
+                if (document.getElementById('accuracy-vs-time-plot').hasChildNodes()) {{
                     return;
                 }}
                 
-                if (plotElement.hasChildNodes()) {{
-                    console.log('[Temporal Plot] ⚠️  El gráfico ya existe, omitiendo regeneración');
+                if (!temporalData || !temporalData.results_by_model) {{
+                    document.getElementById('accuracy-vs-time-plot').innerHTML = 
+                        '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
                     return;
                 }}
                 
-                // Corrección 2: Verificar que Plotly está cargado
-                if (typeof Plotly === 'undefined' && typeof window.Plotly === 'undefined') {{
-                    console.error('[Temporal Plot] ❌ Plotly no está cargado');
-                    plotElement.innerHTML = '<p style="color: #f00; padding: 20px;">Error: Plotly.js no está disponible. Por favor recarga la página.</p>';
-                    return;
-                }}
-                const PlotlyLib = window.Plotly || Plotly;
-                
-                // Corrección 3: Validar datos antes de plotear
-                if (!temporalData) {{
-                    console.error('[Temporal Plot] ❌ temporalData es null o undefined');
-                    plotElement.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
-                    return;
-                }}
-                
-                if (!temporalData.results_by_model) {{
-                    console.error('[Temporal Plot] ❌ temporalData.results_by_model no existe');
-                    plotElement.innerHTML = '<p style="color: #999; padding: 20px;">Datos temporales no disponibles</p>';
-                    return;
-                }}
-                
-                console.log('[Temporal Plot] ✅ Datos validados');
-                console.log('[Temporal Plot] temporalData:', temporalData);
-                
-                // Usar intervalos de los datos si están disponibles, sino usar valores por defecto
                 const intervals = temporalData.intervals || [5, 10, 15, 20, 25, 30];
                 const models = Object.keys(temporalData.results_by_model);
-                console.log('[Temporal Plot] Intervalos:', intervals);
-                console.log('[Temporal Plot] Modelos encontrados:', models);
-                
                 const modelNames = {{
                     'sparse': 'Representaciones Dispersas',
                     'hierarchical': 'Fusión Jerárquica',
@@ -1591,147 +1559,62 @@ python scripts/train_models_temporal.py</pre>
                 const colors = {{'sparse': '#11998e', 'hierarchical': '#667eea', 'hybrid': '#f5576c'}};
                 
                 const traces = [];
-                
-                // Corrección 5: Procesar modelos ANTES de agregar el trace del paper
                 models.forEach(modelName => {{
-                    console.log(`[Temporal Plot] Procesando modelo: ${{modelName}}`);
                     const modelData = temporalData.results_by_model[modelName];
-                    if (!modelData) {{
-                        console.warn(`[Temporal Plot] ⚠️  No hay datos para modelo ${{modelName}}`);
-                        return;
-                    }}
+                    if (!modelData) return;
                     
-                    // Obtener todas las claves disponibles (ordenadas numéricamente)
+                    // Obtener claves disponibles y mapearlas a intervalos válidos
                     const availableKeys = Object.keys(modelData).map(k => parseInt(k)).filter(k => !isNaN(k)).sort((a, b) => a - b);
-                    console.log(`[Temporal Plot]   Claves disponibles: ${{availableKeys}}`);
-                    
-                    // Filtrar intervalos que no sean 0 (el intervalo 0 puede no tener datos)
                     const validIntervals = intervals.filter(i => i > 0);
-                    console.log(`[Temporal Plot]   Intervalos válidos: ${{validIntervals}}`);
                     
-                    // Mapear claves a intervalos
-                    const precisions = [];
+                    const accuracies = [];
                     const xValues = [];
                     
+                    // Mapear claves [1,2,3,4,5] a intervalos [5,10,15,20,25]
                     availableKeys.forEach((key, keyIdx) => {{
                         if (keyIdx < validIntervals.length) {{
                             const interval = validIntervals[keyIdx];
                             const keyStr = String(key);
                             
-                            console.log(`[Temporal Plot]     Mapeando: keyIdx=${{keyIdx}}, key=${{key}}, keyStr="${{keyStr}}", interval=${{interval}}`);
-                            
-                            // Obtener los datos usando la clave como string
                             if (modelData[keyStr] !== undefined) {{
-                                // Priorizar accuracy para mostrar variación temporal
-                                // Si accuracy no está disponible o es inválido, usar precision como fallback
-                                let metricValue = modelData[keyStr].accuracy;
-                                const precision = modelData[keyStr].precision;
-                                const f1Score = modelData[keyStr].f1_score;
-                                
-                                // Si accuracy es null/undefined/NaN, usar precision
-                                if (metricValue === null || metricValue === undefined || isNaN(metricValue)) {{
-                                    metricValue = precision;
-                                    console.log(`[Temporal Plot]       Usando precision (accuracy no disponible)`);
-                                }} else {{
-                                    // Usar accuracy directamente para mostrar variación temporal
-                                    console.log(`[Temporal Plot]       Usando accuracy para mostrar variación temporal`);
-                                }}
-                                
-                                console.log(`[Temporal Plot]       accuracy=${{modelData[keyStr].accuracy}}, precision=${{precision}}, f1=${{f1Score}}, metricValue=${{metricValue}}`);
-                                
-                                if (metricValue !== null && metricValue !== undefined && !isNaN(metricValue)) {{
-                                    const metricPercent = metricValue * 100;
-                                    precisions.push(metricPercent);
+                                // Usar accuracy directamente (como en la versión original)
+                                const acc = modelData[keyStr].accuracy;
+                                if (acc !== null && acc !== undefined && !isNaN(acc)) {{
+                                    accuracies.push(acc * 100);
                                     xValues.push(interval);
-                                    console.log(`[Temporal Plot]       ✅ Agregado: x=${{interval}}, y=${{metricPercent.toFixed(2)}}%`);
-                                }} else {{
-                                    console.warn(`[Temporal Plot]       ⚠️  Métrica inválida: ${{metricValue}}`);
                                 }}
-                            }} else {{
-                                console.warn(`[Temporal Plot]       ⚠️  Clave "${{keyStr}}" no encontrada en modelData`);
                             }}
-                        }} else {{
-                            console.warn(`[Temporal Plot]       ⚠️  keyIdx (${{keyIdx}}) >= validIntervals.length (${{validIntervals.length}})`);
                         }}
                     }});
                     
-                    console.log(`[Temporal Plot]   Resultado: ${{precisions.length}} puntos de datos`);
-                    console.log(`[Temporal Plot]   xValues: ${{xValues}}`);
-                    console.log(`[Temporal Plot]   precisions: ${{precisions.map(p => p.toFixed(2)).join(', ')}}%`);
-                    
-                    // Solo agregar el trace si hay al menos un valor válido
-                    if (precisions.length > 0 && xValues.length === precisions.length) {{
-                        const trace = {{
+                    if (accuracies.length > 0) {{
+                        traces.push({{
                             x: xValues,
-                            y: precisions,
+                            y: accuracies,
                             name: modelNames[modelName] || modelName,
                             type: 'scatter',
                             mode: 'lines+markers',
                             marker: {{ size: 10, color: colors[modelName] || '#666' }},
-                            line: {{ width: 3, color: colors[modelName] || '#666' }}
-                        }};
-                        traces.push(trace);
-                        console.log(`[Temporal Plot]   ✅ Trace agregado para ${{modelName}} con ${{precisions.length}} puntos`);
-                    }} else {{
-                        console.warn(`[Temporal Plot]   ⚠️  No se agregó trace para ${{modelName}}: precisions.length=${{precisions.length}}, xValues.length=${{xValues.length}}`);
+                            line: {{ width: 2, color: colors[modelName] || '#666' }}
+                        }});
                     }}
                 }});
                 
-                // Añadir datos de papers para comparación (DESPUÉS de procesar modelos)
-                const paperIntervals = intervals.filter(i => i > 0); // Usar solo intervalos válidos
-                const paperPrecisions = [94.3, 93.5, 92.8, 93.8, 92.8, 95.0];
-                // Ajustar los valores del paper a los intervalos disponibles
-                const paperValues = paperIntervals.map((interval, idx) => {{
-                    const paperIdx = Math.min(idx, paperPrecisions.length - 1);
-                    return paperPrecisions[paperIdx];
-                }});
-                
+                // Añadir datos de papers para comparación
                 traces.push({{
-                    x: paperIntervals,
-                    y: paperValues,
+                    x: [5, 10, 15, 20, 25, 30],
+                    y: [94.4, 93.5, 92.7, 94.0, 93.2, 95.3],
                     name: 'Sensors 2021 (Paper)',
                     type: 'scatter',
                     mode: 'lines+markers',
                     marker: {{ size: 10, color: '#999', symbol: 'diamond' }},
                     line: {{ width: 2, color: '#999', dash: 'dash' }}
                 }});
-                console.log('[Temporal Plot] ✅ Trace del paper agregado');
-                
-                console.log(`[Temporal Plot] Total de traces: ${{traces.length}}`);
-                traces.forEach((trace, idx) => {{
-                    console.log(`[Temporal Plot]   Trace ${{idx + 1}}: ${{trace.name}} - ${{trace.x.length}} puntos`);
-                }});
-                
-                // Corrección 4: Calcular el rango dinámico DESPUÉS de crear todos los traces
-                let minY = 100;
-                let maxY = 0;
-                traces.forEach(trace => {{
-                    if (trace.y && trace.y.length > 0) {{
-                        const traceMin = Math.min(...trace.y);
-                        const traceMax = Math.max(...trace.y);
-                        minY = Math.min(minY, traceMin);
-                        maxY = Math.max(maxY, traceMax);
-                        console.log(`[Temporal Plot]   Trace ${{trace.name}}: min=${{traceMin.toFixed(2)}}, max=${{traceMax.toFixed(2)}}`);
-                    }}
-                }});
-                
-                // Agregar margen y asegurar que el rango incluya todos los datos
-                minY = Math.max(0, minY - 2); // Margen inferior, mínimo 0
-                maxY = Math.min(100, maxY + 2); // Margen superior, máximo 100
-                
-                // Corrección 4: Forzar que minY sea menor que 85 si hay datos de hierarchical
-                const hasHierarchical = traces.some(t => t.name === 'Fusión Jerárquica');
-                if (hasHierarchical && minY >= 85) {{
-                    console.log('[Temporal Plot] ⚠️  minY >= 85, forzando minY = 82 para mostrar datos de hierarchical');
-                    minY = 82;
-                }}
-                
-                console.log(`[Temporal Plot] Rango Y calculado: [${{minY.toFixed(2)}}, ${{maxY.toFixed(2)}}]`);
                 
                 const layout = {{
-                    title: {{ text: 'Accuracy vs Minutos Antes de SCD', font: {{ size: 20, color: '#667eea' }} }},
+                    title: {{ text: 'Precisión vs Minutos Antes de SCD', font: {{ size: 20, color: '#667eea' }} }},
                     xaxis: {{ title: 'Minutos Antes de SCD', titlefont: {{ size: 14 }} }},
-                    yaxis: {{ title: 'Accuracy (%)', titlefont: {{ size: 14 }}, range: [minY, maxY] }},
+                    yaxis: {{ title: 'Precisión (%)', titlefont: {{ size: 14 }}, range: [85, 100] }},
                     height: 500,
                     margin: {{ l: 60, r: 40, t: 80, b: 60 }},
                     paper_bgcolor: 'white',
@@ -1739,15 +1622,7 @@ python scripts/train_models_temporal.py</pre>
                     legend: {{ x: 0.7, y: 0.1 }}
                 }};
                 
-                // Corrección 1: Manejo de errores con try-catch
-                try {{
-                    console.log('[Temporal Plot] Llamando a Plotly.newPlot...');
-                    PlotlyLib.newPlot('accuracy-vs-time-plot', traces, layout, {{ responsive: true }});
-                    console.log('[Temporal Plot] ✅ Gráfico generado exitosamente');
-                }} catch (error) {{
-                    console.error('[Temporal Plot] ❌ Error al generar gráfico:', error);
-                    plotElement.innerHTML = `<p style="color: #f00; padding: 20px;">Error al generar gráfico: ${{error.message}}</p>`;
-                }}
+                Plotly.newPlot('accuracy-vs-time-plot', traces, layout, {{ responsive: true }});
             }}
             
             // Generar tabla de resultados
@@ -2019,25 +1894,16 @@ python scripts/train_models_temporal.py</pre>
             
             // Activar generación de gráficos cuando se abren las pestañas
             document.addEventListener('DOMContentLoaded', function() {{
-                console.log('[Temporal] DOMContentLoaded disparado');
-                
                 const temporalOverviewTab = document.querySelector('[data-tab="temporal-overview"]');
                 const temporalComparisonTab = document.querySelector('[data-tab="temporal-comparison"]');
                 const temporalVisualizationTab = document.querySelector('[data-tab="temporal-visualization"]');
                 const temporalAnalysisTab = document.querySelector('[data-tab="temporal-analysis"]');
                 
-                console.log('[Temporal] temporalOverviewTab encontrado:', !!temporalOverviewTab);
-                console.log('[Temporal] temporalOverviewTab tiene clase active:', temporalOverviewTab?.classList.contains('active'));
-                
                 if (temporalOverviewTab && temporalOverviewTab.classList.contains('active')) {{
-                    console.log('[Temporal] Ejecutando generateAccuracyVsTimePlot después de 500ms');
                     setTimeout(() => {{
-                        console.log('[Temporal] Timeout ejecutado, llamando generateAccuracyVsTimePlot');
                         generateAccuracyVsTimePlot();
                         generateTemporalResultsTable();
                     }}, 500);
-                }} else {{
-                    console.log('[Temporal] ⚠️  temporalOverviewTab no está activo al cargar');
                 }}
                 
                 if (temporalComparisonTab && temporalComparisonTab.classList.contains('active')) {{
@@ -2064,11 +1930,8 @@ python scripts/train_models_temporal.py</pre>
             document.querySelectorAll('.tab').forEach(tab => {{
                 tab.addEventListener('click', function() {{
                     const tabName = this.getAttribute('data-tab');
-                    console.log(`[Temporal] Tab clickeado: ${{tabName}}`);
                     if (tabName === 'temporal-overview') {{
-                        console.log('[Temporal] Ejecutando generateAccuracyVsTimePlot después de 200ms');
                         setTimeout(() => {{
-                            console.log('[Temporal] Timeout ejecutado (click), llamando generateAccuracyVsTimePlot');
                             generateAccuracyVsTimePlot();
                             generateTemporalResultsTable();
                         }}, 200);
