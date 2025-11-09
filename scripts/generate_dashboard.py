@@ -1564,59 +1564,40 @@ python scripts/train_models_temporal.py</pre>
                     const modelData = temporalData.results_by_model[modelName];
                     if (!modelData) return;
                     
-                    // Obtener todas las claves disponibles (pueden ser enteros o strings)
-                    const availableKeys = Object.keys(modelData).map(k => {{
-                        const numKey = parseInt(k);
-                        return isNaN(numKey) ? k : numKey;
-                    }}).sort((a, b) => a - b);
-                    
-                    // Mapear intervalos a claves disponibles
-                    // Las claves pueden ser índices [1,2,3,4,5] que corresponden a intervalos [5,10,15,20,25,30]
-                    // O pueden ser los intervalos directamente
-                    const precisions = [];
-                    const xValues = [];
+                    // Obtener todas las claves disponibles (ordenadas numéricamente)
+                    const availableKeys = Object.keys(modelData).map(k => parseInt(k)).filter(k => !isNaN(k)).sort((a, b) => a - b);
                     
                     // Filtrar intervalos que no sean 0 (el intervalo 0 puede no tener datos)
                     const validIntervals = intervals.filter(i => i > 0);
                     
-                    validIntervals.forEach((interval, idx) => {{
-                        let found = false;
-                        let precision = null;
-                        
-                        // Estrategia 1: Intentar con el intervalo como clave directa
-                        if (modelData[interval] !== undefined) {{
-                            precision = modelData[interval].precision || modelData[interval].accuracy;
-                            found = true;
-                        }} else if (modelData[String(interval)] !== undefined) {{
-                            precision = modelData[String(interval)].precision || modelData[String(interval)].accuracy;
-                            found = true;
-                        }} else {{
-                            // Estrategia 2: Mapear por índice
-                            // Si las claves son [1,2,3,4,5] y los intervalos son [5,10,15,20,25,30],
-                            // mapear clave[idx] -> intervalo[idx]
-                            if (idx < availableKeys.length) {{
-                                const key = availableKeys[idx];
-                                // Intentar como int y como string
-                                if (modelData[key] !== undefined) {{
-                                    precision = modelData[key].precision || modelData[key].accuracy;
-                                    found = true;
-                                }} else if (modelData[String(key)] !== undefined) {{
-                                    precision = modelData[String(key)].precision || modelData[String(key)].accuracy;
-                                    found = true;
+                    // Mapear claves a intervalos
+                    // Las claves son índices [1,2,3,4,5] que corresponden a intervalos [5,10,15,20,25]
+                    // (saltando el intervalo 0)
+                    const precisions = [];
+                    const xValues = [];
+                    
+                    availableKeys.forEach((key, keyIdx) => {{
+                        // La clave es un índice (1,2,3,4,5) que mapea al intervalo en la posición keyIdx+1
+                        // (porque saltamos el intervalo 0)
+                        if (keyIdx < validIntervals.length) {{
+                            const interval = validIntervals[keyIdx];
+                            const keyStr = String(key);
+                            
+                            // Obtener los datos usando la clave como string
+                            if (modelData[keyStr] !== undefined) {{
+                                const precision = modelData[keyStr].precision || modelData[keyStr].accuracy;
+                                if (precision !== null && precision !== undefined && !isNaN(precision)) {{
+                                    precisions.push(precision * 100);
+                                    xValues.push(interval);
                                 }}
                             }}
                         }}
-                        
-                        if (found && precision !== null) {{
-                            precisions.push(precision * 100);
-                            xValues.push(interval);
-                        }}
                     }});
                     
-                    // Solo agregar el trace si hay al menos un valor no nulo
-                    if (precisions.length > 0 && precisions.some(v => v !== null && !isNaN(v))) {{
+                    // Solo agregar el trace si hay al menos un valor válido
+                    if (precisions.length > 0) {{
                         traces.push({{
-                            x: xValues.length > 0 ? xValues : validIntervals,
+                            x: xValues,
                             y: precisions,
                             name: modelNames[modelName] || modelName,
                             type: 'scatter',
