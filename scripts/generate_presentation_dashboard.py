@@ -1140,10 +1140,10 @@ class PresentationDashboardGenerator:
 
     def _generate_section_5d_realtime_examples(self) -> str:
         """Sección 5d: Ejemplos de Predicción en Tiempo Real"""
-        # Seleccionar ejemplos específicos: 2, 3, 7, 8 (índices 1, 2, 6, 7)
+        # Seleccionar ejemplos específicos: 2, 7 (índices 1, 6)
         selected_examples = []
-        example_indices = [1, 2, 6, 7]  # Ejemplos 2, 3, 7, 8 (0-indexed)
-        example_names = ["Ejemplo 2", "Ejemplo 3", "Ejemplo 7", "Ejemplo 8"]
+        example_indices = [1, 6]  # Ejemplos 2, 7 (0-indexed)
+        example_names = ["Ejemplo 2", "Ejemplo 7"]
         
         if self.realtime_data:
             examples = self.realtime_data.get('visualization_examples', self.realtime_data.get('examples', []))
@@ -1168,7 +1168,7 @@ class PresentationDashboardGenerator:
             <div class="subsection">
                 <h3 class="subsection-title">📊 Casos Reales con Señales ECG</h3>
                 <p style="font-size: 1.1em; margin-bottom: 20px; line-height: 1.8;">
-                    A continuación se muestran <strong>4 ejemplos reales</strong> de señales ECG procesadas por nuestros modelos, 
+                    A continuación se muestran <strong>2 ejemplos reales</strong> de señales ECG procesadas por nuestros modelos, 
                     demostrando la capacidad de predicción en tiempo real con datos del conjunto de prueba.
                 </p>
                 

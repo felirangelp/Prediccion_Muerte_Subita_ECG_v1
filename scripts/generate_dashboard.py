@@ -4275,7 +4275,9 @@ python scripts/train_models.py --inter-patient</pre>
                 }}
                 examplesHTML += '</div>';
                 
-                examples.forEach((example, idx) => {{
+                // Filtrar ejemplos: excluir índices 2 y 7 (Ejemplos 3 y 8)
+                const filteredExamples = examples.filter((_, idx) => idx !== 2 && idx !== 7);
+                filteredExamples.forEach((example, idx) => {{
                     const sparsePred = example.predictions.sparse_name || 'N/A';
                     const sparseProb = example.probabilities.sparse 
                         ? (sparsePred === 'SCD' 
@@ -4324,7 +4326,9 @@ python scripts/train_models.py --inter-patient</pre>
                 
                 // Generar gráficas Plotly interactivas para cada señal ECG
                 setTimeout(() => {{
-                    examples.forEach((example, idx) => {{
+                    // Filtrar ejemplos: excluir índices 2 y 7 (Ejemplos 3 y 8)
+                const filteredExamples = examples.filter((_, idx) => idx !== 2 && idx !== 7);
+                filteredExamples.forEach((example, idx) => {{
                         if (example.signal_data && example.time_axis) {{
                             generateECGSignalPlot(idx, example);
                         }}
