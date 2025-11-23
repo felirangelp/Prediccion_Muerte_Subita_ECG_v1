@@ -787,45 +787,6 @@
             </script>
         </div>
 
-        <div class="section" id="section-5c">
-            <h2 class="section-title">
-                <span class="icon">5️⃣c</span>
-                Esquema Multi-Clase: Abordando el Sesgo Binario
-            </h2>
-            
-            <div class="subsection">
-                <h3 class="subsection-title">🔀 Innovación Metodológica</h3>
-                <div class="content-grid">
-                    <div class="card">
-                        <h3>❌ Enfoque Binario Tradicional</h3>
-                        <p><strong>Problema:</strong> Sesgo al asignar a SCD si no se parece a Normal</p>
-                        <p><strong>Limitación:</strong> No distingue intervalos temporales pre-SCD</p>
-                    </div>
-                    <div class="card">
-                        <h3>✅ Esquema Multi-Clase Propuesto</h3>
-                        <p><strong>Solución:</strong> Clases = Normal + intervalos temporales (5, 10, 15, 20, 25, 30 min)</p>
-                        <p><strong>Ventaja:</strong> Clasifica en la clase con mayor similitud, reduciendo sesgos</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="subsection">
-                <h3 class="subsection-title">📊 Comparación de Rendimiento</h3>
-                <div class="plot-container" id="multiclass-comparison-plot"></div>
-                <div class="highlight-box" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left-color: #ff9800; margin-top: 20px;">
-                    <h4 style="color: #ff9800;">💡 Conclusión</h4>
-                    <p>El esquema multi-clase <strong>mejora la precisión</strong> al capturar características específicas 
-                    de cada intervalo temporal, permitiendo identificar señales pre-SCD con mayor antelación y precisión.</p>
-                </div>
-            </div>
-            
-            <script>
-                const multiclassData = {"binary_results": {"hierarchical": 0.9487179487179487}, "multiclass_results": {"hierarchical": {"accuracy": 0.8717948717948718, "classes": ["Normal", "5min", "10min", "15min", "20min", "25min"]}}};
-                const multiclassBinaryAvg = 0.9487179487179487;
-                const multiclassMulticlassAvg = 0.8717948717948718;
-            </script>
-        </div>
-
         <div class="section" id="section-5d">
             <h2 class="section-title">
                 <span class="icon">⚡</span>

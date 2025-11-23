@@ -103,7 +103,6 @@ class PresentationDashboardGenerator:
         html_content += self._generate_section_4_feature_extraction()
         html_content += self._generate_section_5_classification()
         html_content += self._generate_section_5b_temporal_analysis()
-        html_content += self._generate_section_5c_multiclass_analysis()
         html_content += self._generate_section_5d_realtime_examples()
         html_content += self._generate_section_6_conclusions()
         html_content += self._generate_scripts()
@@ -1029,111 +1028,6 @@ class PresentationDashboardGenerator:
             <script>
                 const temporalData = {temporal_data_json};
                 const hasTemporalData = {str(has_temporal_data).lower()};
-            </script>
-        </div>
-"""
-
-    def _generate_section_5c_multiclass_analysis(self) -> str:
-        """Sección 5c: Esquema Multi-Clase vs Binario"""
-        # Preparar datos multi-clase
-        multiclass_data_json = "null"
-        has_multiclass_data = False
-        binary_avg = 0.8561
-        multiclass_avg = None
-
-        if self.multiclass_results:
-            try:
-                import json
-
-                # Calcular promedio binario
-                if (
-                    hasattr(self.multiclass_results, "binary_results")
-                    and self.multiclass_results.binary_results
-                ):
-                    binary_values = list(
-                        self.multiclass_results.binary_results.values()
-                    )
-                    binary_avg = (
-                        sum(binary_values) / len(binary_values)
-                        if binary_values
-                        else 0.8561
-                    )
-
-                # Calcular promedio multi-clase
-                if (
-                    hasattr(self.multiclass_results, "multiclass_results")
-                    and self.multiclass_results.multiclass_results
-                ):
-                    multiclass_values = [
-                        r.accuracy
-                        for r in self.multiclass_results.multiclass_results.values()
-                    ]
-                    multiclass_avg = (
-                        sum(multiclass_values) / len(multiclass_values)
-                        if multiclass_values
-                        else None
-                    )
-
-                # Convertir a JSON
-                multiclass_data_dict = {
-                    "binary_results": (
-                        self.multiclass_results.binary_results
-                        if hasattr(self.multiclass_results, "binary_results")
-                        else {}
-                    ),
-                    "multiclass_results": {},
-                }
-                if hasattr(self.multiclass_results, "multiclass_results"):
-                    for (
-                        model_name,
-                        result,
-                    ) in self.multiclass_results.multiclass_results.items():
-                        multiclass_data_dict["multiclass_results"][model_name] = {
-                            "accuracy": float(result.accuracy),
-                            "classes": result.classes,
-                        }
-                multiclass_data_json = json.dumps(multiclass_data_dict)
-                has_multiclass_data = True
-            except Exception as e:
-                print(f"⚠️  Error procesando datos multi-clase: {e}")
-
-        return f"""
-        <div class="section" id="section-5c">
-            <h2 class="section-title">
-                <span class="icon">5️⃣c</span>
-                Esquema Multi-Clase: Abordando el Sesgo Binario
-            </h2>
-            
-            <div class="subsection">
-                <h3 class="subsection-title">🔀 Innovación Metodológica</h3>
-                <div class="content-grid">
-                    <div class="card">
-                        <h3>❌ Enfoque Binario Tradicional</h3>
-                        <p><strong>Problema:</strong> Sesgo al asignar a SCD si no se parece a Normal</p>
-                        <p><strong>Limitación:</strong> No distingue intervalos temporales pre-SCD</p>
-                    </div>
-                    <div class="card">
-                        <h3>✅ Esquema Multi-Clase Propuesto</h3>
-                        <p><strong>Solución:</strong> Clases = Normal + intervalos temporales (5, 10, 15, 20, 25, 30 min)</p>
-                        <p><strong>Ventaja:</strong> Clasifica en la clase con mayor similitud, reduciendo sesgos</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="subsection">
-                <h3 class="subsection-title">📊 Comparación de Rendimiento</h3>
-                <div class="plot-container" id="multiclass-comparison-plot"></div>
-                <div class="highlight-box" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left-color: #ff9800; margin-top: 20px;">
-                    <h4 style="color: #ff9800;">💡 Conclusión</h4>
-                    <p>El esquema multi-clase <strong>mejora la precisión</strong> al capturar características específicas 
-                    de cada intervalo temporal, permitiendo identificar señales pre-SCD con mayor antelación y precisión.</p>
-                </div>
-            </div>
-            
-            <script>
-                const multiclassData = {multiclass_data_json};
-                const multiclassBinaryAvg = {binary_avg};
-                const multiclassMulticlassAvg = {multiclass_avg if multiclass_avg is not None else 'null'};
             </script>
         </div>
 """
