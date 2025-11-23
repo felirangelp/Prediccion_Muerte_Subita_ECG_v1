@@ -291,7 +291,7 @@ def train_models_by_interval(temporal_data: Dict,
                 )
             else:
                 print(f"   ⚠️  No se puede usar stratify (muy pocas muestras por clase), usando división aleatoria")
-                X_train, X_test, y_train, y_test = train_test_split(
+            X_train, X_test, y_train, y_test = train_test_split(
                     X_interval, y_interval, 
                     test_size=adaptive_test_size, 
                     random_state=42
@@ -389,24 +389,24 @@ def train_models_by_interval(temporal_data: Dict,
                         )
                     else:
                         # División simple train/test
-                        results = train_model_by_interval(
-                            model_type, X_train, y_train, X_test, y_test,
-                            interval_label=str(interval), fs=128.0
-                        )
-                        
-                        # Crear TemporalIntervalResult
-                        interval_result = TemporalIntervalResult(
-                            interval_minutes=interval if isinstance(interval, int) else interval[0],
-                            accuracy=results['accuracy'],
-                            precision=results['precision'],
-                            recall=results['recall'],
-                            f1_score=results['f1_score'],
-                            auc_roc=results['auc_roc'],
-                            confusion_matrix=results['confusion_matrix'],
-                            predictions=results['predictions'],
-                            probabilities=results['probabilities'],
-                            n_samples=results['n_samples']
-                        )
+                    results = train_model_by_interval(
+                        model_type, X_train, y_train, X_test, y_test,
+                        interval_label=str(interval), fs=128.0
+                    )
+                    
+                    # Crear TemporalIntervalResult
+                    interval_result = TemporalIntervalResult(
+                        interval_minutes=interval if isinstance(interval, int) else interval[0],
+                        accuracy=results['accuracy'],
+                        precision=results['precision'],
+                        recall=results['recall'],
+                        f1_score=results['f1_score'],
+                        auc_roc=results['auc_roc'],
+                        confusion_matrix=results['confusion_matrix'],
+                        predictions=results['predictions'],
+                        probabilities=results['probabilities'],
+                        n_samples=results['n_samples']
+                    )
                     
                     temporal_results.add_result(model_type, interval, interval_result)
                     

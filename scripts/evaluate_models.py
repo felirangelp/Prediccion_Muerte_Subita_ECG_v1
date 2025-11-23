@@ -216,6 +216,18 @@ def cross_validation_evaluation(model, X, y, model_name: str, fs: float = 128.0,
 
 def main():
     """Función principal"""
+    # Configurar GPU al inicio
+    try:
+        from src.config_m1 import configure_tensorflow_m1
+        tf_config = configure_tensorflow_m1()
+        if tf_config['gpu_available']:
+            print(f"✅ GPU Metal detectada: {tf_config['gpu_device']}")
+            print(f"   Backend: {tf_config['tensorflow_backend']}")
+        else:
+            print("⚠️  GPU no disponible, usando CPU")
+    except Exception as e:
+        print(f"⚠️  Error configurando GPU: {e}")
+    
     import argparse
     
     parser = argparse.ArgumentParser(description='Evaluar modelos de predicción SCD')
@@ -346,7 +358,7 @@ def main():
                     all_results['sparse']['f1_score_ci'] = cv_res.ci_95.get('f1_score', (0, 0))
                     all_results['sparse']['auc_roc_ci'] = cv_res.ci_95.get('auc_roc', (0, 0))
                     all_results['sparse']['scores_per_fold'] = cv_res.scores_per_fold
-        
+    
         if 'hierarchical' in models:
             results = evaluate_model(
                 models['hierarchical'], X_test, y_test, 'Hierarchical Fusion', fs=128.0
@@ -378,12 +390,12 @@ def main():
                     all_results['hybrid']['f1_score_ci'] = cv_res.ci_95.get('f1_score', (0, 0))
                     all_results['hybrid']['auc_roc_ci'] = cv_res.ci_95.get('auc_roc', (0, 0))
                     all_results['hybrid']['scores_per_fold'] = cv_res.scores_per_fold
-        
-        # Guardar resultados
-        with open(args.output, 'wb') as f:
-            pickle.dump(all_results, f)
-        
-        print(f"\n✅ Resultados guardados en: {args.output}")
+    
+    # Guardar resultados
+    with open(args.output, 'wb') as f:
+        pickle.dump(all_results, f)
+    
+    print(f"\n✅ Resultados guardados en: {args.output}")
     
     # Crear resumen
     print("\n" + "="*60)

@@ -51,7 +51,14 @@ class OrthogonalMatchingPursuit:
             Coeficientes dispersos (vector)
         """
         signal = signal.flatten()
+        
+        # Limpiar NaN e Inf de la señal antes de procesar
+        signal = np.nan_to_num(signal, nan=0.0, posinf=0.0, neginf=0.0)
+        
         n_atoms = dictionary.shape[1]
+        
+        # Limpiar NaN e Inf del diccionario
+        dictionary = np.nan_to_num(dictionary, nan=0.0, posinf=0.0, neginf=0.0)
         
         # Inicializar
         residual = signal.copy()
@@ -59,7 +66,10 @@ class OrthogonalMatchingPursuit:
         support = []  # Índices de átomos seleccionados
         
         # Normalizar diccionario
-        dict_norm = dictionary / np.linalg.norm(dictionary, axis=0, keepdims=True)
+        dict_norm = dictionary / (np.linalg.norm(dictionary, axis=0, keepdims=True) + 1e-10)
+        
+        # Limpiar después de normalizar
+        dict_norm = np.nan_to_num(dict_norm, nan=0.0, posinf=0.0, neginf=0.0)
         
         # Determinar número máximo de coeficientes
         max_coefs = self.n_nonzero_coefs
@@ -89,9 +99,18 @@ class OrthogonalMatchingPursuit:
             # Actualizar residual
             residual = signal - dict_norm @ coef
             
+            # Limpiar NaN e Inf del residual
+            residual = np.nan_to_num(residual, nan=0.0, posinf=0.0, neginf=0.0)
+            
+            # Limpiar NaN e Inf de los coeficientes
+            coef = np.nan_to_num(coef, nan=0.0, posinf=0.0, neginf=0.0)
+            
             # Verificar convergencia
             if np.linalg.norm(residual) < self.tolerance:
                 break
+        
+        # Limpiar NaN e Inf del resultado final
+        coef = np.nan_to_num(coef, nan=0.0, posinf=0.0, neginf=0.0)
         
         return coef
 
@@ -410,11 +429,31 @@ class SparseRepresentationClassifier:
         
         features = np.array(features)
         
+        # Limpiar NaN e Inf de las características antes de escalar
+        features = np.nan_to_num(features, nan=0.0, posinf=0.0, neginf=0.0)
+        
+        # Verificar y eliminar filas con NaN restantes (por si acaso)
+        valid_rows = ~np.isnan(features).any(axis=1)
+        if not np.all(valid_rows):
+            print(f"⚠️  Eliminando {np.sum(~valid_rows)} muestras con NaN")
+            features = features[valid_rows]
+            y = y[valid_rows]
+        
         # Normalizar características
         features_scaled = self.scaler.fit_transform(features)
         
+        # Limpiar nuevamente después de escalar (por si el scaler introdujo NaN)
+        features_scaled = np.nan_to_num(features_scaled, nan=0.0, posinf=0.0, neginf=0.0)
+        
+        # Verificar que no haya NaN antes de entrenar
+        if np.isnan(features_scaled).any():
+            print("⚠️  Advertencia: Aún hay NaN después de limpieza, reemplazando con 0")
+            features_scaled = np.nan_to_num(features_scaled, nan=0.0, posinf=0.0, neginf=0.0)
+        
         # Entrenar SVM
         print(f"🤖 Entrenando clasificador SVM...")
+        print(f"   Características: {features_scaled.shape}")
+        print(f"   Etiquetas: {y.shape}")
         self.svm_classifier = SVC(kernel=self.svm_kernel, C=self.svm_c, 
                                   probability=True, random_state=42)
         self.svm_classifier.fit(features_scaled, y)

@@ -13,7 +13,7 @@ Incluye:
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers, Model
+from tensorflow.keras import layers, Model, regularizers
 import scipy.signal as signal
 from scipy import stats
 from sklearn.preprocessing import StandardScaler
@@ -518,19 +518,43 @@ class HierarchicalFusionClassifier:
         nonlinear_norm = layers.BatchNormalization()(nonlinear_input)
         deep_norm = layers.BatchNormalization()(deep_input)
         
-        # Proyección a dimensión común
-        linear_proj = layers.Dense(self.fusion_dim, activation='relu')(linear_norm)
-        nonlinear_proj = layers.Dense(self.fusion_dim, activation='relu')(nonlinear_norm)
-        deep_proj = layers.Dense(self.fusion_dim, activation='relu')(deep_norm)
+        # Proyección a dimensión común (con regularización L2)
+        linear_proj = layers.Dense(
+            self.fusion_dim, 
+            activation='relu',
+            kernel_regularizer=regularizers.l2(0.01)
+        )(linear_norm)
+        nonlinear_proj = layers.Dense(
+            self.fusion_dim, 
+            activation='relu',
+            kernel_regularizer=regularizers.l2(0.01)
+        )(nonlinear_norm)
+        deep_proj = layers.Dense(
+            self.fusion_dim, 
+            activation='relu',
+            kernel_regularizer=regularizers.l2(0.01)
+        )(deep_norm)
         
-        # Fusión jerárquica (concatenación + capa densa)
+        # Fusión jerárquica (concatenación + capa densa con regularización L2)
         fused = layers.Concatenate()([linear_proj, nonlinear_proj, deep_proj])
-        fused = layers.Dense(self.fusion_dim * 2, activation='relu')(fused)
+        fused = layers.Dense(
+            self.fusion_dim * 2, 
+            activation='relu',
+            kernel_regularizer=regularizers.l2(0.01)
+        )(fused)
         fused = layers.Dropout(self.dropout)(fused)
-        fused = layers.Dense(self.fusion_dim, activation='relu')(fused)
+        fused = layers.Dense(
+            self.fusion_dim, 
+            activation='relu',
+            kernel_regularizer=regularizers.l2(0.01)
+        )(fused)
         
-        # Clasificación
-        output = layers.Dense(self.n_classes, activation='softmax')(fused)
+        # Clasificación (con regularización L2)
+        output = layers.Dense(
+            self.n_classes, 
+            activation='softmax',
+            kernel_regularizer=regularizers.l2(0.01)
+        )(fused)
         
         self.fusion_model = Model(
             inputs=[linear_input, nonlinear_input, deep_input],
@@ -539,7 +563,7 @@ class HierarchicalFusionClassifier:
         
         self.fusion_model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=0.001),
-            loss='sparse_categorical_crossentropy',
+            loss=keras.losses.SparseCategoricalCrossentropy(label_smoothing=0.1),
             metrics=['accuracy']
         )
         
@@ -609,8 +633,18 @@ class HierarchicalFusionClassifier:
         
         return np.argmax(predictions, axis=1)
     
-    def predict_proba(self, X: List[np.ndarray], fs: float = 128.0) -> np.ndarray:
-        """Obtener probabilidades"""
+    def predict_proba(self, X: List[np.ndarray], fs: float = 128.0, temperature: float = 1.5) -> np.ndarray:
+        """
+        Obtener probabilidades con temperatura scaling para suavizar probabilidades extremas
+        
+        Args:
+            X: Lista de señales ECG
+            fs: Frecuencia de muestreo
+            temperature: Factor de temperatura (default 1.5). Valores > 1.0 suavizan las probabilidades
+        
+        Returns:
+            Probabilidades calibradas
+        """
         # Similar a predict pero retorna probabilidades
         linear_features = []
         nonlinear_features = []
@@ -650,6 +684,16 @@ class HierarchicalFusionClassifier:
             verbose=0
         )
         
+        # Aplicar temperatura scaling para suavizar probabilidades extremas
+        if temperature != 1.0:
+            # Convertir probabilidades a logits (con protección numérica)
+            logits = np.log(np.clip(probabilities, 1e-10, 1.0 - 1e-10))
+            # Aplicar temperatura
+            logits_scaled = logits / temperature
+            # Convertir de vuelta a probabilidades con softmax
+            exp_logits = np.exp(logits_scaled - np.max(logits_scaled, axis=1, keepdims=True))
+            probabilities = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+        
         return probabilities
     
     def save(self, filepath: str):
@@ -688,9 +732,22 @@ class HierarchicalFusionClassifier:
         )
         instance.input_length = metadata['input_length']
         
-        # Cargar modelos
-        instance.tcn_model = keras.models.load_model(f"{filepath}_tcn.h5")
-        instance.fusion_model = keras.models.load_model(f"{filepath}_fusion.h5")
+        # Cargar modelos con compile=False para evitar problemas de compatibilidad de versiones
+        try:
+            instance.tcn_model = keras.models.load_model(f"{filepath}_tcn.h5", compile=False)
+            instance.fusion_model = keras.models.load_model(f"{filepath}_fusion.h5", compile=False)
+        except Exception as e:
+            # Si falla, intentar con safe_mode=False (Keras 3.x)
+            try:
+                instance.tcn_model = keras.models.load_model(f"{filepath}_tcn.h5", compile=False, safe_mode=False)
+                instance.fusion_model = keras.models.load_model(f"{filepath}_fusion.h5", compile=False, safe_mode=False)
+            except:
+                # Último intento: cargar sin compilar y recompilar después
+                instance.tcn_model = keras.models.load_model(f"{filepath}_tcn.h5", compile=False)
+                instance.fusion_model = keras.models.load_model(f"{filepath}_fusion.h5", compile=False)
+                # Recompilar si es necesario (opcional, solo si se va a entrenar de nuevo)
+                # instance.tcn_model.compile(...)
+                # instance.fusion_model.compile(...)
         
         # Cargar scalers
         with open(f"{filepath}_scalers.pkl", 'rb') as f:

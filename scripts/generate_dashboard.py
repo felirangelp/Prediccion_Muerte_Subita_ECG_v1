@@ -1636,17 +1636,17 @@ python scripts/train_models_temporal.py</pre>
                     }});
                     
                     if (accuracies.length > 0) {{
-                        traces.push({{
+                    traces.push({{
                             x: xValues,
-                            y: accuracies,
-                            name: modelNames[modelName] || modelName,
-                            type: 'scatter',
-                            mode: 'lines+markers',
-                            marker: {{ size: 10, color: colors[modelName] || '#666' }},
+                        y: accuracies,
+                        name: modelNames[modelName] || modelName,
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        marker: {{ size: 10, color: colors[modelName] || '#666' }},
                             line: {{ width: 2, color: colors[modelName] || '#666' }},
                             text: hoverTexts,
                             hoverinfo: 'text'
-                        }});
+                    }});
                     }}
                 }});
                 
@@ -1806,21 +1806,21 @@ python scripts/train_models_temporal.py</pre>
                 const traces = [];
                 
                 // Datos de nuestros modelos (usando mapeo correcto)
-                models.forEach(modelName => {{
+                    models.forEach(modelName => {{
                     const modelData = temporalData.results_by_model[modelName];
                     if (!modelData) return;
                     
                     const mapping = mapKeysToIntervals(modelData, intervals);
-                    const accuracies = [];
+                        const accuracies = [];
                     const xValues = [];
                     
                     validIntervals.forEach(interval => {{
                         if (mapping[interval] !== undefined) {{
                             accuracies.push(mapping[interval].accuracy * 100);
                             xValues.push(interval);
-                        }}
-                    }});
-                    
+                            }}
+                        }});
+                        
                     if (accuracies.length > 0) {{
                         traces.push({{
                             x: xValues,
@@ -1830,8 +1830,8 @@ python scripts/train_models_temporal.py</pre>
                             mode: 'lines+markers',
                             marker: {{ size: 10, color: colors[modelName] || '#666' }},
                             line: {{ width: 3, color: colors[modelName] || '#666' }}
-                        }});
-                    }}
+                    }});
+                }}
                 }});
                 
                 // Datos del paper Sensors 2021
@@ -1983,7 +1983,7 @@ python scripts/train_models_temporal.py</pre>
                     }});
                     
                     if (row.length > 0) {{
-                        z.push(row);
+                    z.push(row);
                         y_labels.push(modelNames[model] || model);
                     }}
                 }});
@@ -4277,13 +4277,29 @@ python scripts/train_models.py --inter-patient</pre>
                 
                 examples.forEach((example, idx) => {{
                     const sparsePred = example.predictions.sparse_name || 'N/A';
-                    const sparseProb = example.probabilities.sparse ? (example.probabilities.sparse.scd * 100).toFixed(2) : 'N/A';
+                    const sparseProb = example.probabilities.sparse 
+                        ? (sparsePred === 'SCD' 
+                            ? (example.probabilities.sparse.scd * 100).toFixed(2) 
+                            : (example.probabilities.sparse.normal * 100).toFixed(2))
+                        : 'N/A';
                     const hierarchicalPred = example.predictions.hierarchical_name || 'N/A';
-                    const hierarchicalProb = example.probabilities.hierarchical ? (example.probabilities.hierarchical.scd * 100).toFixed(2) : 'N/A';
+                    const hierarchicalProb = example.probabilities.hierarchical 
+                        ? (hierarchicalPred === 'SCD' 
+                            ? (example.probabilities.hierarchical.scd * 100).toFixed(2) 
+                            : (example.probabilities.hierarchical.normal * 100).toFixed(2))
+                        : 'N/A';
                     const hybridPred = example.predictions.hybrid_name || 'N/A';
-                    const hybridProb = example.probabilities.hybrid ? (example.probabilities.hybrid.scd * 100).toFixed(2) : 'N/A';
+                    const hybridProb = example.probabilities.hybrid 
+                        ? (hybridPred === 'SCD' 
+                            ? (example.probabilities.hybrid.scd * 100).toFixed(2) 
+                            : (example.probabilities.hybrid.normal * 100).toFixed(2))
+                        : 'N/A';
                     const ensemblePred = example.predictions.ensemble_name || 'N/A';
-                    const ensembleProb = example.probabilities.ensemble ? (example.probabilities.ensemble.scd * 100).toFixed(2) : 'N/A';
+                    const ensembleProb = example.probabilities.ensemble 
+                        ? (ensemblePred === 'SCD' 
+                            ? (example.probabilities.ensemble.scd * 100).toFixed(2) 
+                            : (example.probabilities.ensemble.normal * 100).toFixed(2))
+                        : 'N/A';
                     
                     examplesHTML += '<div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 20px;">';
                     examplesHTML += '<h4 style="color: #667eea; margin-bottom: 15px;">Ejemplo ' + (idx + 1) + ' - Etiqueta Real: <span style="color: ' + (example.true_label === 1 ? '#f5576c' : '#11998e') + ';">' + example.true_label_name + '</span></h4>';

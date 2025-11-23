@@ -52,14 +52,20 @@ def wavelet_decomposition(ecg_signal: np.ndarray, wavelet: str = 'db4',
             detail_coeffs[i] = coeffs[i]  # Detalle
         
         reconstructed = pywt.waverec(detail_coeffs, wavelet)
+        # Limpiar NaN e Inf inmediatamente después de la reconstrucción
+        reconstructed = np.nan_to_num(reconstructed, nan=0.0, posinf=0.0, neginf=0.0)
         # Asegurar misma longitud
         if len(reconstructed) > len(ecg_signal):
             reconstructed = reconstructed[:len(ecg_signal)]
         elif len(reconstructed) < len(ecg_signal):
             reconstructed = np.pad(reconstructed, (0, len(ecg_signal) - len(reconstructed)))
+        # Limpiar nuevamente después del padding
+        reconstructed = np.nan_to_num(reconstructed, nan=0.0, posinf=0.0, neginf=0.0)
         scales.append(reconstructed)
     
     escalograma = np.array(scales).T  # (samples x levels)
+    # Limpiar NaN e Inf del escalograma completo
+    escalograma = np.nan_to_num(escalograma, nan=0.0, posinf=0.0, neginf=0.0)
     
     return coeffs, escalograma
 
@@ -81,8 +87,12 @@ def create_wavelet_dictionary(training_signals: List[np.ndarray],
     all_atoms = []
     
     for signal in training_signals:
+        # Limpiar señal de entrada antes de procesar
+        signal = np.nan_to_num(signal, nan=0.0, posinf=0.0, neginf=0.0)
         # Descomposición wavelet
         coeffs, escalograma = wavelet_decomposition(signal, wavelet, levels)
+        # Asegurar que el escalograma no tenga NaN
+        escalograma = np.nan_to_num(escalograma, nan=0.0, posinf=0.0, neginf=0.0)
         
         # Extraer átomos de diferentes niveles del escalograma
         for level in range(levels + 1):
@@ -138,6 +148,16 @@ def create_wavelet_dictionary(training_signals: List[np.ndarray],
             valid_rows = np.ones(len(all_atoms_array), dtype=bool)
         
         all_atoms_array = all_atoms_array[valid_rows]
+        
+        # Verificación final: asegurar que no haya NaN o Inf antes de KMeans
+        if np.any(np.isnan(all_atoms_array)) or np.any(np.isinf(all_atoms_array)):
+            # Si aún hay NaN/Inf, limpiar nuevamente
+            all_atoms_array = np.nan_to_num(all_atoms_array, nan=0.0, posinf=0.0, neginf=0.0)
+        
+        # Verificar que el array sea finito antes de KMeans
+        if not np.all(np.isfinite(all_atoms_array)):
+            # Si hay valores no finitos, reemplazar con ceros
+            all_atoms_array = np.where(np.isfinite(all_atoms_array), all_atoms_array, 0.0)
         
         if len(all_atoms_array) < n_selected:
             # Si no hay suficientes átomos, usar todos los disponibles
@@ -380,8 +400,16 @@ class HybridSCDClassifier:
             from sklearn.linear_model import LogisticRegression
             self.ensemble_classifier = LogisticRegression(random_state=42, max_iter=1000)
             
+            # Limpiar NaN e Inf de las probabilidades antes de combinar
+            sparse_proba = np.nan_to_num(sparse_proba, nan=0.0, posinf=0.0, neginf=0.0)
+            hierarchical_proba = np.nan_to_num(hierarchical_proba, nan=0.0, posinf=0.0, neginf=0.0)
+            
             # Combinar características
             combined_features = np.hstack([sparse_proba, hierarchical_proba])
+            
+            # Limpiar NaN final antes de entrenar
+            combined_features = np.nan_to_num(combined_features, nan=0.0, posinf=0.0, neginf=0.0)
+            
             self.ensemble_classifier.fit(combined_features, y)
             
         print(f"✅ Modelo híbrido entrenado completamente")
@@ -429,8 +457,14 @@ class HybridSCDClassifier:
         # Predicciones del componente jerárquico
         hierarchical_proba = self.hierarchical_classifier.predict_proba(X, fs=fs)
         
+        # Limpiar NaN e Inf antes de combinar
+        sparse_proba = np.nan_to_num(sparse_proba, nan=0.0, posinf=0.0, neginf=0.0)
+        hierarchical_proba = np.nan_to_num(hierarchical_proba, nan=0.0, posinf=0.0, neginf=0.0)
+        
         # Combinar probabilidades
         combined_features = np.hstack([sparse_proba, hierarchical_proba])
+        combined_features = np.nan_to_num(combined_features, nan=0.0, posinf=0.0, neginf=0.0)
+        
         predictions = self.ensemble_classifier.predict(combined_features)
         
         return predictions
@@ -477,8 +511,14 @@ class HybridSCDClassifier:
         # Probabilidades jerárquicas
         hierarchical_proba = self.hierarchical_classifier.predict_proba(X, fs=fs)
         
+        # Limpiar NaN e Inf antes de combinar
+        sparse_proba = np.nan_to_num(sparse_proba, nan=0.0, posinf=0.0, neginf=0.0)
+        hierarchical_proba = np.nan_to_num(hierarchical_proba, nan=0.0, posinf=0.0, neginf=0.0)
+        
         # Combinar
         combined_features = np.hstack([sparse_proba, hierarchical_proba])
+        combined_features = np.nan_to_num(combined_features, nan=0.0, posinf=0.0, neginf=0.0)
+        
         probabilities = self.ensemble_classifier.predict_proba(combined_features)
         
         return probabilities
