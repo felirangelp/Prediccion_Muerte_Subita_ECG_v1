@@ -4316,38 +4316,6 @@ python scripts/train_models.py --inter-patient</pre>
                         examplesHTML += '</div>';
                     }}
                     
-                    // Resultados de los modelos
-                    examplesHTML += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">';
-                    
-                    // Sparse
-                    examplesHTML += '<div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 15px; border-radius: 8px; color: white;">';
-                    examplesHTML += '<h5 style="color: white; margin-bottom: 10px;">Representaciones Dispersas</h5>';
-                    examplesHTML += '<div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">' + sparsePred + '</div>';
-                    examplesHTML += '<div style="font-size: 18px;">' + sparseProb + '%</div>';
-                    examplesHTML += '</div>';
-                    
-                    // Hierarchical
-                    examplesHTML += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 8px; color: white;">';
-                    examplesHTML += '<h5 style="color: white; margin-bottom: 10px;">Fusión Jerárquica</h5>';
-                    examplesHTML += '<div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">' + hierarchicalPred + '</div>';
-                    examplesHTML += '<div style="font-size: 18px;">' + hierarchicalProb + '%</div>';
-                    examplesHTML += '</div>';
-                    
-                    // Hybrid
-                    examplesHTML += '<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 15px; border-radius: 8px; color: white;">';
-                    examplesHTML += '<h5 style="color: white; margin-bottom: 10px;">Modelo Híbrido</h5>';
-                    examplesHTML += '<div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">' + hybridPred + '</div>';
-                    examplesHTML += '<div style="font-size: 18px;">' + hybridProb + '%</div>';
-                    examplesHTML += '</div>';
-                    
-                    // Ensemble
-                    examplesHTML += '<div style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); padding: 15px; border-radius: 8px; color: white;">';
-                    examplesHTML += '<h5 style="color: white; margin-bottom: 10px;">Ensemble Final</h5>';
-                    examplesHTML += '<div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">' + ensemblePred + '</div>';
-                    examplesHTML += '<div style="font-size: 18px;">' + ensembleProb + '%</div>';
-                    examplesHTML += '</div>';
-                    
-                    examplesHTML += '</div>';
                     examplesHTML += '</div>';
                 }});
                 

@@ -1269,35 +1269,6 @@ class PresentationDashboardGenerator:
                             examplesHTML += '<div class="plot-container" id="realtime-ecg-plot-' + idx + '" style="margin-bottom: 25px;"></div>';
                         }}
                         
-                        // Resultados de los modelos
-                        examplesHTML += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;">';
-                        
-                        // Sparse
-                        examplesHTML += '<div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 20px; border-radius: 10px; color: white; text-align: center; border: ' + (sparseCorrect ? '3px solid #4caf50' : '3px solid transparent') + ';">';
-                        examplesHTML += '<h5 style="color: white; margin-bottom: 10px; font-size: 1.1em;">Representaciones Dispersas</h5>';
-                        examplesHTML += '<div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;">' + sparsePred + '</div>';
-                        examplesHTML += '<div style="font-size: 20px; opacity: 0.9;">' + sparseProb + '%</div>';
-                        if (sparseCorrect) examplesHTML += '<div style="margin-top: 10px; font-size: 0.9em;">✓ Correcto</div>';
-                        examplesHTML += '</div>';
-                        
-                        // Hierarchical
-                        examplesHTML += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; text-align: center; border: ' + (hierarchicalCorrect ? '3px solid #4caf50' : '3px solid transparent') + ';">';
-                        examplesHTML += '<h5 style="color: white; margin-bottom: 10px; font-size: 1.1em;">Fusión Jerárquica</h5>';
-                        examplesHTML += '<div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;">' + hierarchicalPred + '</div>';
-                        examplesHTML += '<div style="font-size: 20px; opacity: 0.9;">' + hierarchicalProb + '%</div>';
-                        if (hierarchicalCorrect) examplesHTML += '<div style="margin-top: 10px; font-size: 0.9em;">✓ Correcto</div>';
-                        examplesHTML += '</div>';
-                        
-                        // Hybrid
-                        examplesHTML += '<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; color: white; text-align: center; border: ' + (hybridCorrect ? '3px solid #4caf50' : '3px solid transparent') + ';">';
-                        examplesHTML += '<h5 style="color: white; margin-bottom: 10px; font-size: 1.1em;">Modelo Híbrido</h5>';
-                        examplesHTML += '<div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;">' + hybridPred + '</div>';
-                        examplesHTML += '<div style="font-size: 20px; opacity: 0.9;">' + hybridProb + '%</div>';
-                        if (hybridCorrect) examplesHTML += '<div style="margin-top: 10px; font-size: 0.9em;">✓ Correcto</div>';
-                        examplesHTML += '</div>';
-                        
-                        examplesHTML += '</div>';
-                        
                         // Agregar explicación
                         examplesHTML += explanation;
                         
