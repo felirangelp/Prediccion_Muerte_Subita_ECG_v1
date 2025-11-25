@@ -669,9 +669,12 @@ class PresentationDashboardGenerator:
                     <div class="card">
                         <h3>🎯 Clasificación</h3>
                         <ul class="feature-list">
-                            <li>SVM con kernel RBF</li>
-                            <li>Validación cruzada</li>
-                            <li>Evaluación de métricas</li>
+                            <li><strong>SVM con kernel RBF</strong><br>
+                                <span style="font-size: 0.9em; color: #666;">Clasificador robusto para datos no lineales. <strong>Ventaja:</strong> Alta capacidad de discriminación</span></li>
+                            <li><strong>Validación cruzada</strong><br>
+                                <span style="font-size: 0.9em; color: #666;">5-fold cross-validation. <strong>Objetivo:</strong> Generalización confiable</span></li>
+                            <li><strong>Evaluación de métricas</strong><br>
+                                <span style="font-size: 0.9em; color: #666;">Accuracy, Precision, Recall, F1-Score, AUC-ROC. <strong>Objetivo:</strong> Rendimiento completo</span></li>
                         </ul>
                     </div>
                 </div>
