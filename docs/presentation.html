@@ -588,7 +588,6 @@
             <div class="tabs">
                 <button class="tab active" data-tab="db-overview">Resumen</button>
                 <button class="tab" data-tab="db-distribution">Distribución</button>
-                <button class="tab" data-tab="db-examples">Ejemplos de Señales</button>
             </div>
             
             <div id="db-overview" class="tab-content active">
@@ -612,10 +611,6 @@
             
             <div id="db-distribution" class="tab-content">
                 <div class="plot-container" id="db-distribution-plot"></div>
-            </div>
-            
-            <div id="db-examples" class="tab-content">
-                <div class="plot-container" id="db-signals-plot"></div>
             </div>
         </div>
 
@@ -1139,8 +1134,6 @@ graph TD
                     // Generar gráficos cuando se activan pestañas específicas
                     if (tabName === 'db-distribution') {
                         setTimeout(() => generateDBDistributionPlot(), 200);
-                    } else if (tabName === 'db-examples') {
-                        setTimeout(() => generateDBSignalsPlot(), 200);
                     } else if (tabName === 'metrics-comparison') {
                         setTimeout(() => generateMetricsComparisonPlot(), 200);
                     } else if (tabName === 'roc-curves') {
@@ -1257,69 +1250,6 @@ graph TD
                 };
                 
                 Plotly.newPlot('db-distribution-plot', [trace], layout, { responsive: true });
-            }
-            
-            // Gráfico de ejemplos de señales
-            function generateDBSignalsPlot() {
-                if (document.getElementById('db-signals-plot').hasChildNodes()) return;
-                
-                const fs = 128;
-                const duration = 5;
-                const samples = fs * duration;
-                const t = Array.from({length: samples}, (_, i) => i / fs);
-                
-                // Señal normal
-                const normalSignal = t.map(time => {
-                    const freq = 1.2;
-                    return Math.sin(2 * Math.PI * freq * time) + 
-                           0.3 * Math.sin(2 * Math.PI * freq * 2 * time) +
-                           0.1 * Math.sin(2 * Math.PI * freq * 3 * time) +
-                           (Math.random() - 0.5) * 0.1;
-                });
-                
-                // Señal SCD
-                const scdSignal = t.map(time => {
-                    const freq = 1.0;
-                    const variation = Math.sin(2 * Math.PI * 0.1 * time) * 0.3;
-                    return Math.sin(2 * Math.PI * (freq + variation) * time) + 
-                           0.5 * Math.sin(2 * Math.PI * (freq + variation) * 2 * time) +
-                           0.2 * Math.sin(2 * Math.PI * (freq + variation) * 3 * time) +
-                           (Math.random() - 0.5) * 0.15;
-                });
-                
-                const trace1 = {
-                    x: t,
-                    y: normalSignal,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Normal (NSRDB)',
-                    line: { color: '#667eea', width: 2 }
-                };
-                
-                const trace2 = {
-                    x: t,
-                    y: scdSignal,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'SCD (SDDB)',
-                    line: { color: '#f5576c', width: 2 }
-                };
-                
-                const layout = {
-                    title: {
-                        text: 'Ejemplos de Señales ECG (5 segundos)',
-                        font: { size: 20, color: '#667eea' }
-                    },
-                    xaxis: { title: 'Tiempo (segundos)', titlefont: { size: 14 } },
-                    yaxis: { title: 'Amplitud (mV)', titlefont: { size: 14 } },
-                    height: 500,
-                    margin: { l: 60, r: 40, t: 80, b: 60 },
-                    paper_bgcolor: 'white',
-                    plot_bgcolor: 'white',
-                    legend: { x: 0.7, y: 0.95 }
-                };
-                
-                Plotly.newPlot('db-signals-plot', [trace1, trace2], layout, { responsive: true });
             }
             
             // Gráfico de comparación de métricas
