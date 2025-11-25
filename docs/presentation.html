@@ -517,10 +517,14 @@
                     <div class="card">
                         <h3>🔧 Preprocesamiento</h3>
                         <ul class="feature-list">
-                            <li>Filtrado de línea base (0.5 Hz)</li>
-                            <li>Filtrado pasa-bajos (40 Hz)</li>
-                            <li>Normalización Z-score</li>
-                            <li>Segmentación en ventanas de 30s</li>
+                            <li><strong>Filtrado de línea base (0.5 Hz)</strong><br>
+                                <span style="font-size: 0.9em; color: #666;">Elimina drift y artefactos de movimiento. <strong>Objetivo:</strong> Señal estable</span></li>
+                            <li><strong>Filtrado pasa-bajos (40 Hz)</strong><br>
+                                <span style="font-size: 0.9em; color: #666;">Reduce ruido de alta frecuencia. <strong>Objetivo:</strong> Preservar información relevante del ECG</span></li>
+                            <li><strong>Normalización Z-score</strong><br>
+                                <span style="font-size: 0.9em; color: #666;">Estandariza amplitud entre pacientes. <strong>Objetivo:</strong> Comparabilidad uniforme</span></li>
+                            <li><strong>Segmentación en ventanas de 30s</strong><br>
+                                <span style="font-size: 0.9em; color: #666;">Divide señales largas en segmentos manejables. <strong>Objetivo:</strong> Procesamiento eficiente</span></li>
                         </ul>
                     </div>
                     <div class="card">
