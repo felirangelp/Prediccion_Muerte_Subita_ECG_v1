@@ -1252,11 +1252,6 @@ class PresentationDashboardGenerator:
         """Sección 6: Conclusiones (Comparación con Literatura)"""
         return """
         <div class="section" id="section-6">
-            <h2 class="section-title">
-                <span class="icon">7️⃣</span>
-                Conclusiones - Comparación con Literatura
-            </h2>
-            
             <div class="subsection">
                 <h3 class="subsection-title">🔮 Trabajo Futuro</h3>
                 <div class="content-grid">
