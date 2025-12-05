@@ -3,294 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Predicción de Muerte Súbita Cardíaca - Dashboards Interactivos</title>
+    <title>Dashboards - Predicción de Muerte Súbita Cardíaca</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
         }
-        
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
-        
+
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 50px 40px;
             text-align: center;
-            margin-bottom: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: fadeInDown 0.8s ease-out;
+            color: white;
+            margin-bottom: 50px;
+            padding: 40px 20px;
         }
-        
+
         .header h1 {
-            color: #667eea;
             font-size: 3em;
             margin-bottom: 15px;
-            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        
-        .header .subtitle {
-            color: #666;
+
+        .header p {
             font-size: 1.3em;
+            opacity: 0.95;
             margin-bottom: 20px;
         }
-        
-        .header .description {
-            color: #888;
+
+        .header .subtitle {
             font-size: 1.1em;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
+            opacity: 0.9;
+            margin-top: 10px;
         }
-        
+
         .dashboards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 30px;
             margin-bottom: 40px;
         }
-        
+
         .dashboard-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background: white;
+            border-radius: 15px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 0.8s ease-out;
+            text-decoration: none;
+            color: inherit;
+            display: block;
             position: relative;
-            overflow: hidden;
         }
-        
-        .dashboard-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .dashboard-card:nth-child(1) {
-            animation-delay: 0.2s;
-        }
-        
-        .dashboard-card:nth-child(2) {
-            animation-delay: 0.4s;
-        }
-        
+
         .dashboard-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
         }
-        
-        .dashboard-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            display: block;
-        }
-        
+
         .dashboard-card h2 {
             color: #667eea;
             font-size: 2em;
             margin-bottom: 15px;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
-        .dashboard-card .dashboard-type {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 500;
-            margin-bottom: 20px;
+
+        .dashboard-card .icon {
+            font-size: 2.5em;
         }
-        
-        .dashboard-card .description {
+
+        .dashboard-card p {
             color: #666;
             line-height: 1.8;
             margin-bottom: 25px;
             font-size: 1.05em;
         }
-        
-        .features-list {
+
+        .features {
             list-style: none;
-            margin-bottom: 30px;
+            margin: 25px 0;
         }
-        
-        .features-list li {
-            color: #555;
+
+        .features li {
             padding: 10px 0;
-            padding-left: 30px;
-            position: relative;
-            line-height: 1.6;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1em;
         }
-        
-        .features-list li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
+
+        .features li:before {
+            content: "✓";
             color: #667eea;
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 1.3em;
+            width: 20px;
         }
-        
-        .btn-container {
-            text-align: center;
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
-        
-        .btn {
+
+        .button {
             display: inline-block;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 18px 50px;
-            border-radius: 50px;
+            padding: 12px 25px;
+            border-radius: 25px;
             text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            position: relative;
-            overflow: hidden;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            font-size: 0.95em;
         }
-        
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
+
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
+
+        .button-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
         }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+
+        .button-secondary:hover {
+            background: #667eea;
+            color: white;
         }
-        
-        .btn span {
-            position: relative;
-            z-index: 1;
-        }
-        
+
         .info-section {
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
             margin-top: 40px;
-            animation: fadeInUp 0.8s ease-out;
-            animation-delay: 0.6s;
-            animation-fill-mode: both;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
-        
+
         .info-section h3 {
             color: #667eea;
-            font-size: 1.8em;
             margin-bottom: 20px;
-            text-align: center;
+            font-size: 1.5em;
         }
-        
-        .info-grid {
+
+        .info-section p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .links-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-top: 30px;
+            margin-top: 20px;
         }
-        
-        .info-item {
-            text-align: center;
+
+        .link-card {
+            background: #f8f9fa;
             padding: 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
         }
-        
-        .info-item .label {
+
+        .link-card h4 {
             color: #667eea;
-            font-weight: 600;
             margin-bottom: 10px;
-            font-size: 1.1em;
         }
-        
-        .info-item .value {
-            color: #555;
-            font-size: 1em;
+
+        .link-card a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
         }
-        
+
+        .link-card a:hover {
+            text-decoration: underline;
+        }
+
         .footer {
             text-align: center;
-            margin-top: 40px;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.95em;
+            color: white;
+            margin-top: 50px;
+            padding: 30px 20px;
+            opacity: 0.9;
         }
-        
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+
+        .footer a {
+            color: white;
+            text-decoration: underline;
         }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+
+        .footer a:hover {
+            opacity: 0.8;
         }
-        
+
+        .status-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+
         @media (max-width: 768px) {
             .dashboards-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .header h1 {
                 font-size: 2em;
             }
-            
-            .header .subtitle {
-                font-size: 1.1em;
+
+            .button-group {
+                flex-direction: column;
             }
-            
-            .dashboard-card {
-                padding: 30px 20px;
-            }
-            
-            .dashboard-card h2 {
-                font-size: 1.5em;
+
+            .button {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -298,97 +248,121 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Predicción de Muerte Súbita Cardíaca mediante Análisis de Señales ECG</h1>
-            <p class="description">
-                Explora los resultados de nuestro proyecto de investigación que implementa métodos avanzados 
-                de aprendizaje automático para la predicción temprana de muerte súbita cardíaca utilizando 
-                análisis de señales electrocardiográficas (ECG).
-            </p>
+            <h1>🫀 Predicción de Muerte Súbita Cardíaca</h1>
+            <p>Dashboards Interactivos - Análisis de Señales ECG con Machine Learning</p>
+            <p class="subtitle">Proyecto Final - Maestría en Inteligencia Artificial | Pontificia Universidad Javeriana</p>
         </div>
-        
+
         <div class="dashboards-grid">
-            <!-- Dashboard de Presentación Académica -->
+            <!-- Dashboard de Presentación -->
             <div class="dashboard-card">
-                <div class="dashboard-icon">🎓</div>
-                <span class="dashboard-type">Presentación Académica</span>
-                <h2>Dashboard de Presentación</h2>
-                <p class="description">
+                <h2>
+                    <span class="icon">🎓</span>
+                    Dashboard de Presentación
+                </h2>
+                <p>
                     Dashboard diseñado para presentaciones académicas y divulgación científica. 
                     Incluye análisis completo del problema, metodología, resultados comparativos 
                     y visualizaciones interactivas optimizadas para audiencias académicas.
                 </p>
-                
-                <ul class="features-list">
+                <ul class="features">
                     <li>Análisis del problema y contexto clínico</li>
                     <li>Pipeline completo de procesamiento</li>
                     <li>Revisión de literatura y estado del arte</li>
-                    <li>Comparación con métodos baseline (SVM, Random Forest)</li>
+                    <li>Comparación con métodos baseline</li>
                     <li>Análisis temporal por intervalos pre-SCD</li>
-                    <li>Análisis multi-clase y predicciones en tiempo real</li>
+                    <li>Análisis multi-clase y predicciones</li>
                     <li>Conclusiones y trabajo futuro</li>
                 </ul>
-                
-                <div class="btn-container">
-                    <a href="presentation.html" class="btn">
-                        <span>Ver Dashboard de Presentación →</span>
+                <div class="button-group">
+                    <a href="https://felirangelp.github.io/Prediccion_Muerte_Subita_ECG_v1/presentation.html" class="button" target="_blank">
+                        Ver Dashboard de Presentación →
                     </a>
                 </div>
             </div>
-            
-            <!-- Dashboard de Análisis Completo -->
+
+            <!-- Dashboard de Análisis Técnico -->
             <div class="dashboard-card">
-                <div class="dashboard-icon">🔬</div>
-                <span class="dashboard-type">Análisis Técnico Completo</span>
-                <h2>Dashboard de Análisis</h2>
-                <p class="description">
+                <h2>
+                    <span class="icon">🔬</span>
+                    Dashboard de Análisis Técnico
+                </h2>
+                <p>
                     Dashboard técnico completo con análisis detallado de modelos, características, 
                     errores y métricas avanzadas. Ideal para investigadores y desarrolladores 
                     que desean profundizar en los aspectos técnicos del proyecto.
                 </p>
-                
-                <ul class="features-list">
+                <ul class="features">
                     <li>Análisis exploratorio de datos (EDA)</li>
-                    <li>Comparación detallada de modelos (Sparse, Hierarchical, Hybrid)</li>
+                    <li>Comparación detallada de modelos</li>
                     <li>Análisis de importancia de características</li>
                     <li>Análisis de errores y casos problemáticos</li>
                     <li>Validación cruzada y análisis estadístico</li>
                     <li>Análisis Pan-Tompkins para detección de ondas</li>
                     <li>Visualizaciones interactivas con Plotly</li>
                 </ul>
-                
-                <div class="btn-container">
-                    <a href="dashboard.html" class="btn">
-                        <span>Ver Dashboard de Análisis →</span>
+                <div class="button-group">
+                    <a href="https://felirangelp.github.io/Prediccion_Muerte_Subita_ECG_v1/dashboard.html" class="button" target="_blank">
+                        Ver Dashboard de Análisis →
                     </a>
                 </div>
             </div>
         </div>
-        
+
         <div class="info-section">
-            <h3>ℹ️ Información del Proyecto</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="label">📚 Proyecto</div>
-                    <div class="value">Proyecto Final<br>Maestría en IA</div>
+            <h3>📊 Información del Proyecto</h3>
+            <p>
+                Este proyecto implementa <strong>tres modelos avanzados de Machine Learning</strong> 
+                para la predicción de muerte súbita cardíaca mediante análisis de señales ECG:
+            </p>
+            <ul class="features" style="margin-top: 15px;">
+                <li><strong>Modelo Sparse:</strong> 94.2% accuracy, 97.9% AUC-ROC</li>
+                <li><strong>Modelo Hierarchical:</strong> 87.9% accuracy, 86.7% AUC-ROC</li>
+                <li><strong>Modelo Hybrid:</strong> 74.8% accuracy, 85.9% AUC-ROC</li>
+            </ul>
+            
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-top: 20px; border-radius: 5px;">
+                <strong>💡 Nota Importante:</strong> Si los dashboards no cargan en GitHub Pages, 
+                haz clic en "Descargar Dashboard" y abre el archivo descargado en tu navegador. 
+                Los dashboards son archivos HTML autocontenidos que funcionan perfectamente al abrirlos localmente.
+            </div>
+
+            <div class="links-grid" style="margin-top: 30px;">
+                <div class="link-card">
+                    <h4>📚 Repositorio</h4>
+                    <a href="https://github.com/felirangelp/Prediccion_Muerte_Subita" target="_blank">
+                        Ver código fuente en GitHub
+                    </a>
                 </div>
-                <div class="info-item">
-                    <div class="label">🏛️ Institución</div>
-                    <div class="value">Pontificia Universidad<br>Javeriana</div>
+                <div class="link-card">
+                    <h4>📖 Documentación</h4>
+                    <a href="https://github.com/felirangelp/Prediccion_Muerte_Subita/blob/main/QUICKSTART.md" target="_blank">
+                        Guía paso a paso (QUICKSTART.md)
+                    </a>
                 </div>
-                <div class="info-item">
-                    <div class="label">🔬 Métodos</div>
-                    <div class="value">3 Modelos Avanzados<br>de ML</div>
+                <div class="link-card">
+                    <h4>💻 Código Fuente</h4>
+                    <a href="https://github.com/felirangelp/Prediccion_Muerte_Subita/tree/main/src" target="_blank">
+                        Ver implementación de modelos
+                    </a>
                 </div>
-                <div class="info-item">
-                    <div class="label">📊 Datasets</div>
-                    <div class="value">SDDB, NSRDB, CUDB<br>PhysioNet</div>
+                <div class="link-card">
+                    <h4>🔧 Scripts</h4>
+                    <a href="https://github.com/felirangelp/Prediccion_Muerte_Subita/tree/main/scripts" target="_blank">
+                        Ver scripts de ejecución
+                    </a>
                 </div>
             </div>
         </div>
-        
+
         <div class="footer">
-            <p>Proyecto de Investigación - Predicción de Muerte Súbita Cardíaca</p>
-            <p style="margin-top: 10px; opacity: 0.8;">© 2025 - Todos los derechos reservados</p>
+            <p>
+                <strong>Proyecto Final - Maestría en Inteligencia Artificial</strong><br>
+                Pontificia Universidad Javeriana<br><br>
+                <a href="https://github.com/felirangelp/Prediccion_Muerte_Subita" target="_blank">
+                    Ver Repositorio Completo en GitHub
+                </a>
+            </p>
         </div>
     </div>
 </body>
